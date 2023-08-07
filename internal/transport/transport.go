@@ -10,6 +10,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/client"
 	"os"
 	"strconv"
+	"strings"
 )
 
 type GnfdTransport struct {
@@ -85,7 +86,12 @@ func (t *GnfdTransport) LoadStorage(endpoint *transport.Endpoint) (storer.Storer
 	}
 
 	rpcAddress := "https://" + endpoint.Host + ":" + strconv.Itoa(endpoint.Port)
-	newStorage, err := storage.NewStorage(chainID, rpcAddress, privateKey)
+
+	bucketName, found := strings.CutPrefix(endpoint.Path, "/")
+	if !found {
+		panic(fmt.Sprintf("cut prefix of endpoint path error, path: %s, prefix: '/'", endpoint.Path))
+	}
+	newStorage, err := storage.NewStorage(chainID, rpcAddress, privateKey, bucketName)
 	if err != nil {
 		return nil, errors.Wrap(err, "New greenfield storage failed.")
 	}
