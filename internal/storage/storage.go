@@ -12,6 +12,7 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/storage"
 	"io"
+	"math"
 	"strings"
 )
 
@@ -64,19 +65,19 @@ func (s *GnfdStorage) SetEncodedObject(obj plumbing.EncodedObject) (plumbing.Has
 		return obj.Hash(), err
 	}
 
-	err = s.put(s.bucketName, buildObjectsKey(obj.Hash()), c, false)
+	err = s.put(buildObjectsKey(obj.Type(), obj.Hash()), c, false)
 	return obj.Hash(), err
 }
 
 func (s *GnfdStorage) setEncodedObjectType(obj plumbing.EncodedObject) error {
 	key := buildObjectTypeKey(obj.Hash())
 
-	return s.put(s.bucketName, key, []byte(obj.Type().String()), false)
+	return s.put(key, []byte(obj.Type().String()), false)
 }
 
 func (s *GnfdStorage) encodedObjectType(h plumbing.Hash) (plumbing.ObjectType, error) {
 	key := buildObjectTypeKey(h)
-	rec, err := s.get(s.bucketName, key)
+	rec, err := s.get(key)
 	if err != nil {
 		return plumbing.AnyObject, err
 	}
@@ -98,9 +99,9 @@ func (s *GnfdStorage) EncodedObject(t plumbing.ObjectType, h plumbing.Hash) (plu
 		}
 	}
 
-	key := buildObjectsKey(h)
+	key := buildObjectsKey(t, h)
 
-	rec, err := s.get(s.bucketName, key)
+	rec, err := s.get(key)
 	if err != nil {
 		return nil, err
 	}
@@ -125,23 +126,93 @@ func objectFromRecord(content []byte, t plumbing.ObjectType) (plumbing.EncodedOb
 	return o, nil
 }
 
+type EncodedObjectIter struct {
+	t             plumbing.ObjectType
+	s             *GnfdStorage
+	nextKey       string
+	encodeObjects []plumbing.EncodedObject
+	limitSizeOnce uint64
+}
+
+func NewEncodeObjectIter(t plumbing.ObjectType, s *GnfdStorage) *EncodedObjectIter {
+	return &EncodedObjectIter{
+		t:             t,
+		s:             s,
+		nextKey:       "",
+		limitSizeOnce: 100,
+	}
+}
+
+func (i *EncodedObjectIter) Next() (plumbing.EncodedObject, error) {
+	if len(i.encodeObjects) == 0 {
+		objects, maxKey, err := i.s.list(ObjectTypeKey, i.nextKey, i.limitSizeOnce)
+		if err != nil {
+			return nil, err
+		}
+		for _, object := range objects {
+			hash, found := strings.CutPrefix(object, ObjectTypeKey)
+			if !found {
+				panic("Iter encode objects error, prefix not found")
+			}
+
+			encodeObject, err := i.s.EncodedObject(i.t, plumbing.NewHash(hash))
+			if err != nil {
+				return nil, err
+			}
+			i.encodeObjects = append(i.encodeObjects, encodeObject)
+		}
+		i.nextKey = maxKey
+	}
+	encodeObject := i.encodeObjects[0]
+	i.encodeObjects = i.encodeObjects[1:]
+	return encodeObject, nil
+}
+
+func (i *EncodedObjectIter) ForEach(cb func(obj plumbing.EncodedObject) error) error {
+	for {
+		obj, err := i.Next()
+		if err != nil {
+			if err == io.EOF {
+				return nil
+			}
+
+			return err
+		}
+
+		if err := cb(obj); err != nil {
+			if err == storer.ErrStop {
+				return nil
+			}
+			return err
+		}
+	}
+}
+
+func (i *EncodedObjectIter) Close() {}
+
 func (s *GnfdStorage) IterEncodedObjects(objectType plumbing.ObjectType) (storer.EncodedObjectIter, error) {
-	//TODO implement me
-	panic("implement me")
+	return NewEncodeObjectIter(objectType, s), nil
 }
 
 func (s *GnfdStorage) HasEncodedObject(hash plumbing.Hash) error {
-	//TODO implement me
-	panic("implement me")
+	found, err := s.has(buildObjectTypeKey(hash))
+	if err != nil {
+		return err
+	}
+	if found {
+		return nil
+	} else {
+		return plumbing.ErrObjectNotFound
+	}
 }
 
 func (s *GnfdStorage) EncodedObjectSize(hash plumbing.Hash) (int64, error) {
-	//TODO implement me
-	panic("implement me")
+	return s.head(buildObjectTypeKey(hash))
+
 }
 
 func (s *GnfdStorage) SetReference(reference *plumbing.Reference) error {
-	return s.put(s.bucketName, buildReferenceKey(reference.Name()), []byte(reference.Target()), true)
+	return s.put(buildReferenceKey(reference.Name()), []byte(reference.Target()), true)
 }
 
 func (s *GnfdStorage) CheckAndSetReference(new, old *plumbing.Reference) error {
@@ -150,7 +221,7 @@ func (s *GnfdStorage) CheckAndSetReference(new, old *plumbing.Reference) error {
 }
 
 func (s *GnfdStorage) Reference(name plumbing.ReferenceName) (*plumbing.Reference, error) {
-	target, err := s.get(s.bucketName, buildReferenceKey(name))
+	target, err := s.get(buildReferenceKey(name))
 	if err != nil {
 		if strings.Contains(err.Error(), "No such object") {
 			return nil, plumbing.ErrReferenceNotFound
@@ -163,7 +234,7 @@ func (s *GnfdStorage) Reference(name plumbing.ReferenceName) (*plumbing.Referenc
 }
 
 func (s *GnfdStorage) IterReferences() (storer.ReferenceIter, error) {
-	refKeys, err := s.list(s.bucketName, ReferenceKey)
+	refKeys, _, err := s.list(ReferenceKey, "", math.MaxUint64)
 	if err != nil {
 		fmt.Println("list failed, error: ", err, ", bucketName: ", s.bucketName)
 		return nil, err
@@ -182,8 +253,7 @@ func (s *GnfdStorage) IterReferences() (storer.ReferenceIter, error) {
 }
 
 func (s *GnfdStorage) RemoveReference(name plumbing.ReferenceName) error {
-	//TODO implement me
-	panic("implement me")
+	return s.delete(buildReferenceKey(name))
 }
 
 func (s *GnfdStorage) CountLooseRefs() (int, error) {
@@ -217,7 +287,7 @@ func (s *GnfdStorage) Index() (*index.Index, error) {
 }
 
 func (s *GnfdStorage) Config() (*config.Config, error) {
-	rec, err := s.get(s.bucketName, ConfigKey)
+	rec, err := s.get(ConfigKey)
 	if err != nil {
 		return nil, err
 	}
@@ -235,7 +305,7 @@ func (s *GnfdStorage) SetConfig(c *config.Config) error {
 	if err != nil {
 		return err
 	}
-	return s.put(s.bucketName, ConfigKey, jsonBytes)
+	return s.put(ConfigKey, jsonBytes, true)
 
 }
 
