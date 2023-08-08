@@ -64,14 +64,14 @@ func (s *GnfdStorage) SetEncodedObject(obj plumbing.EncodedObject) (plumbing.Has
 		return obj.Hash(), err
 	}
 
-	err = s.put(s.bucketName, buildObjectsKey(obj.Hash()), c)
+	err = s.put(s.bucketName, buildObjectsKey(obj.Hash()), c, false)
 	return obj.Hash(), err
 }
 
 func (s *GnfdStorage) setEncodedObjectType(obj plumbing.EncodedObject) error {
 	key := buildObjectTypeKey(obj.Hash())
 
-	return s.put(s.bucketName, key, []byte(obj.Type().String()))
+	return s.put(s.bucketName, key, []byte(obj.Type().String()), false)
 }
 
 func (s *GnfdStorage) encodedObjectType(h plumbing.Hash) (plumbing.ObjectType, error) {
@@ -141,7 +141,7 @@ func (s *GnfdStorage) EncodedObjectSize(hash plumbing.Hash) (int64, error) {
 }
 
 func (s *GnfdStorage) SetReference(reference *plumbing.Reference) error {
-	return s.put(s.bucketName, buildReferenceKey(reference.Name()), []byte(reference.Target()))
+	return s.put(s.bucketName, buildReferenceKey(reference.Name()), []byte(reference.Target()), true)
 }
 
 func (s *GnfdStorage) CheckAndSetReference(new, old *plumbing.Reference) error {

@@ -46,7 +46,7 @@ func (s *GnfdStorage) get(bucketName, key string) ([]byte, error) {
 	return val, nil
 }
 
-func (s *GnfdStorage) put(bucketName, key string, value []byte) error {
+func (s *GnfdStorage) put(bucketName, key string, value []byte, isOverWrite bool) error {
 	fmt.Println("bucketName: ", bucketName, " key: ", key)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
@@ -56,12 +56,14 @@ func (s *GnfdStorage) put(bucketName, key string, value []byte) error {
 	}
 
 	if err == nil && object != nil {
-		return nil
-		// return nil, do not overwrite.
-		//_, err2 := s.gnfdClient.DeleteObject(ctx, bucketName, key, types.DeleteObjectOption{})
-		//if err2 != nil {
-		//	return err2
-		//}
+		if isOverWrite {
+			_, err2 := s.gnfdClient.DeleteObject(ctx, bucketName, key, types.DeleteObjectOption{})
+			if err2 != nil {
+				return err2
+			}
+		} else {
+			return nil
+		}
 	}
 
 	txHash, err := s.gnfdClient.CreateObject(
