@@ -38,8 +38,6 @@ func (s *rpSession) ReceivePack(ctx context.Context, req *packp.ReferenceUpdateR
 
 	s.caps = req.Capabilities
 
-	//TODO: Implement 'atomic' update of references.
-
 	if req.Packfile != nil {
 		r := ioutil.NewContextReadCloser(ctx, req.Packfile)
 		if err := s.writePackfile(r); err != nil {

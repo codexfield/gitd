@@ -30,8 +30,8 @@ func buildReferenceKey(name plumbing.ReferenceName) string {
 	return ReferenceKey + name.String()
 }
 
-func buildObjectsKey(hash plumbing.Hash) string {
-	return ObjectKey + hash.String()
+func buildObjectsKey(t plumbing.ObjectType, hash plumbing.Hash) string {
+	return ObjectKey + t.String() + "/" + hash.String()
 }
 
 func buildObjectTypeKey(hash plumbing.Hash) string {
