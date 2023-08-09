@@ -20,6 +20,7 @@ var initCmd = &cobra.Command{
                 [--separate-git-dir <git-dir>] [--object-format=<format>]
                 [-b <branch-name> | --initial-branch=<branch-name>]
                 [--shared[=<permissions>]] [<directory>]`,
+
 	Run: func(cmd *cobra.Command, args []string) {
 		var path string
 		if len(args) == 0 {

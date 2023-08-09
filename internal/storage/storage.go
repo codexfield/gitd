@@ -212,7 +212,13 @@ func (s *GnfdStorage) EncodedObjectSize(hash plumbing.Hash) (int64, error) {
 }
 
 func (s *GnfdStorage) SetReference(reference *plumbing.Reference) error {
-	return s.put(buildReferenceKey(reference.Name()), []byte(reference.Target()), true)
+	var val []byte
+	if reference.Type() == plumbing.HashReference {
+		val = []byte(reference.Hash().String())
+	} else {
+		val = []byte(reference.Target())
+	}
+	return s.put(buildReferenceKey(reference.Name()), val, true)
 }
 
 func (s *GnfdStorage) CheckAndSetReference(new, old *plumbing.Reference) error {

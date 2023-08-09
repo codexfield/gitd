@@ -67,8 +67,30 @@ var showSubCmd = &cobra.Command{
 	},
 }
 
+var removeSubCmd = &cobra.Command{
+	Use:   "remove",
+	Short: "usage: git remote remove <name>\n",
+	Run: func(cmd *cobra.Command, args []string) {
+		r, err := git.PlainOpen("./")
+		if err != nil {
+			fmt.Println("Open repository failed, error: ", err)
+			return
+		}
+		if len(args) != 1 {
+			fmt.Println("Too much args, error: ", err)
+			return
+		}
+		err = r.DeleteRemote(args[0])
+		if err != nil {
+			fmt.Println("Delete remote failed, error: ", err)
+			return
+		}
+	},
+}
+
 func init() {
 	remoteCmd.AddCommand(addSubCmd)
 	remoteCmd.AddCommand(showSubCmd)
+	remoteCmd.AddCommand(removeSubCmd)
 	rootCmd.AddCommand(remoteCmd)
 }

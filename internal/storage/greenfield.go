@@ -85,7 +85,7 @@ func (s *GnfdStorage) has(key string) (bool, error) {
 }
 
 func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
-	fmt.Println("bucketName: ", s.bucketName, " key: ", key)
+	fmt.Println("bucketName: ", s.bucketName, " key: ", key, "isOverwrite: ", isOverWrite)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	object, err := s.gnfdClient.HeadObject(ctx, s.bucketName, key)
@@ -122,10 +122,13 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		return err
 	}
 
-	err = s.gnfdClient.PutObject(ctx, s.bucketName, key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
-	if err != nil {
-		fmt.Println("PutObject err : ", err)
-		return err
+	if len(value) != 0 {
+		err = s.gnfdClient.PutObject(ctx, s.bucketName, key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
+		if err != nil {
+			fmt.Println("PutObject err : ", err)
+			return err
+		}
 	}
+
 	return nil
 }

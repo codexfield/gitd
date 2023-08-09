@@ -2,20 +2,72 @@ package transport
 
 import (
 	"context"
+	"fmt"
 	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/go-git/go-git/v5/plumbing/format/packfile"
 	"github.com/go-git/go-git/v5/plumbing/protocol/packp"
 	"github.com/go-git/go-git/v5/plumbing/protocol/packp/capability"
+	"github.com/go-git/go-git/v5/plumbing/revlist"
 	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/plumbing/transport"
+	"github.com/go-git/go-git/v5/utils/ioutil"
 )
 
 type upSession struct {
 	session
 }
 
-func (s *upSession) UploadPack(ctx context.Context, request *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
-	//TODO implement me
-	panic("implement me")
+func (s *upSession) UploadPack(ctx context.Context, req *packp.UploadPackRequest) (*packp.UploadPackResponse, error) {
+	if req.IsEmpty() {
+		return nil, transport.ErrEmptyUploadPackRequest
+	}
+
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	if s.caps == nil {
+		s.caps = capability.NewList()
+		if err := s.setSupportedCapabilities(s.caps); err != nil {
+			return nil, err
+		}
+	}
+
+	if err := s.checkSupportedCapabilities(req.Capabilities); err != nil {
+		return nil, err
+	}
+
+	s.caps = req.Capabilities
+
+	if len(req.Shallows) > 0 {
+		return nil, fmt.Errorf("shallow not supported")
+	}
+
+	objs, err := s.objectsToUpload(req)
+	if err != nil {
+		return nil, err
+	}
+
+	pr, pw := ioutil.Pipe()
+	e := packfile.NewEncoder(pw, s.storer, false)
+	go func() {
+		// TODO: plumb through a pack window.
+		_, err := e.Encode(objs, 10)
+		pw.CloseWithError(err)
+	}()
+
+	return packp.NewUploadPackResponseWithPackfile(req,
+		ioutil.NewContextReadCloser(ctx, pr),
+	), nil
+}
+
+func (s *upSession) objectsToUpload(req *packp.UploadPackRequest) ([]plumbing.Hash, error) {
+	haves, err := revlist.Objects(s.storer, req.Haves, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return revlist.Objects(s.storer, req.Wants, haves)
 }
 
 func (s *upSession) AdvertisedReferences() (*packp.AdvRefs, error) {
