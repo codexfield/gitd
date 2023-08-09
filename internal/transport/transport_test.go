@@ -8,6 +8,7 @@ import (
 	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	transport2 "github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/plumbing/transport/client"
@@ -201,10 +202,14 @@ func newEmptyGreenfieldRepo(c *C) {
 		os.Getenv(transport.EnvChainID),
 		"https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/",
 		os.Getenv(transport.EnvPrivateKey),
-		"helloworld",
+		"hw3",
 	)
 	c.Assert(err, IsNil)
-	_, err = git.Init(newStorage, memfs.New())
+	//_, err = git.Init(newStorage, memfs.New())
+	//c.Assert(err, IsNil)
+
+	h := plumbing.NewSymbolicReference("refs/heads/master", "")
+	err = newStorage.SetReference(h)
 	c.Assert(err, IsNil)
 }
 

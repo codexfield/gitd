@@ -20,8 +20,15 @@ var pushCmd = &cobra.Command{
 			fmt.Println("Open repository failed, error: ", err)
 			return
 		}
+
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			force = false
+		}
+
 		err = r.Push(&git.PushOptions{
 			RemoteName: "origin",
+			Force:      force,
 		})
 		if err != nil {
 			fmt.Println("Repository push failed, error: ", err)
@@ -31,5 +38,6 @@ var pushCmd = &cobra.Command{
 }
 
 func init() {
+	pushCmd.Flags().BoolP("force", "f", false, "force updates")
 	rootCmd.AddCommand(pushCmd)
 }

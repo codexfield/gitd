@@ -3,6 +3,7 @@ package transport
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/packfile"
 	"github.com/go-git/go-git/v5/plumbing/protocol/packp"
@@ -167,6 +168,7 @@ func (s *rpSession) updateReferences(req *packp.ReferenceUpdateRequest) {
 		switch cmd.Action() {
 		case packp.Create:
 			if exists {
+				fmt.Println("new: ", cmd.New.String(), "old: ", cmd.Old.String())
 				s.setStatus(cmd.Name, ErrUpdateReference)
 				continue
 			}
