@@ -201,9 +201,13 @@ func newEmptyGreenfieldRepo(c *C) {
 		os.Getenv(transport.EnvChainID),
 		"https://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/",
 		os.Getenv(transport.EnvPrivateKey),
-		BucketName,
+		"helloworld",
 	)
 	c.Assert(err, IsNil)
 	_, err = git.Init(newStorage, memfs.New())
 	c.Assert(err, IsNil)
+}
+
+func (s *BasicTestSuite) TestEmptyRepoInGreenfield(c *C) {
+	newEmptyGreenfieldRepo(c)
 }

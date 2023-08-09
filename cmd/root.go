@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"gitd/internal/transport"
 	"github.com/spf13/cobra"
 	"runtime"
 )
@@ -19,6 +20,9 @@ var rootCmd = &cobra.Command{
            [--git-dir=<path>] [--work-tree=<path>] [--namespace=<name>]
            [--super-prefix=<path>] [--config-env=<name>=<envvar>]
            <command> [<args>]`,
+	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		transport.InstallGreenfieldTransport()
+	},
 	Run: func(cmd *cobra.Command, args []string) {
 		if verbose {
 			fmt.Println("gitd version", Version, "("+runtime.GOARCH+")")
