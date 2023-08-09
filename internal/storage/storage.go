@@ -17,7 +17,7 @@ import (
 )
 
 type GnfdStorage struct {
-	gnfdClient client.Client
+	GnfdClient client.Client
 	bucketName string
 }
 
@@ -42,7 +42,7 @@ func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorag
 	fmt.Println("New Greenfield storage success, chainID: ", block.ChainID, "height: ", block.Height)
 
 	return &GnfdStorage{
-		gnfdClient: gnfdClient,
+		GnfdClient: gnfdClient,
 		bucketName: bucketName,
 	}, nil
 }
@@ -213,16 +213,16 @@ func (s *GnfdStorage) EncodedObjectSize(hash plumbing.Hash) (int64, error) {
 
 func (s *GnfdStorage) SetReference(reference *plumbing.Reference) error {
 	var val []byte
-	if reference.Type() == plumbing.HashReference {
+	switch reference.Type() {
+	case plumbing.HashReference:
 		val = []byte(reference.Hash().String())
-	} else {
-		val = []byte(reference.Target())
+	case plumbing.SymbolicReference:
+		val = []byte(fmt.Sprintf("ref: %s\n", reference.Target()))
 	}
 	return s.put(buildReferenceKey(reference.Name()), val, true)
 }
 
 func (s *GnfdStorage) CheckAndSetReference(new, old *plumbing.Reference) error {
-	//TODO implement me
 	panic("implement me")
 }
 
