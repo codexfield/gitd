@@ -11,12 +11,17 @@ import (
 	"github.com/bnb-chain/greenfield-go-sdk/types"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 	transport2 "github.com/go-git/go-git/v5/plumbing/transport"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
+)
+
+const (
+	DefaultBranchReferenceName = "refs/heads/main"
 )
 
 // createCmd represents the create command
@@ -71,7 +76,14 @@ var createCmd = &cobra.Command{
 			}
 		}
 
-		_, err = git.Init(newStorage, memfs.New())
+		_, err = git.InitWithOptions(newStorage, memfs.New(), git.InitOptions{DefaultBranch: DefaultBranchReferenceName})
+
+		hash := plumbing.NewHashReference(DefaultBranchReferenceName, plumbing.Hash{})
+		err = newStorage.SetReference(hash)
+		if err != nil {
+			fmt.Println("Set Reference ", DefaultBranchReferenceName, "error: ", err)
+			return
+		}
 	},
 }
 

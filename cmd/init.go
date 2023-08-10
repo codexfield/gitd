@@ -31,7 +31,9 @@ var initCmd = &cobra.Command{
 
 		fs := osfs.New(path)
 		dot, _ := fs.Chroot(".git")
-		_, err := git.Init(filesystem.NewStorage(dot, cache.NewObjectLRUDefault()), nil)
+		_, err := git.InitWithOptions(filesystem.NewStorage(dot, cache.NewObjectLRUDefault()), nil, git.InitOptions{
+			DefaultBranch: DefaultBranchReferenceName,
+		})
 		if err != nil {
 			fmt.Println("init repository error: ", err)
 		}

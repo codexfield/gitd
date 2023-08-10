@@ -39,6 +39,7 @@ func (s *GnfdStorage) head(key string) (int64, error) {
 }
 
 func (s *GnfdStorage) get(key string) ([]byte, error) {
+	fmt.Println("get key:", key)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	objectDetails, err := s.GnfdClient.HeadObject(ctx, s.bucketName, key)
@@ -59,6 +60,7 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("get key: ", key, "value", string(val))
 	return val, nil
 }
 

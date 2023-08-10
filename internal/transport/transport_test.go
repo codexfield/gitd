@@ -216,3 +216,14 @@ func newEmptyGreenfieldRepo(c *C) {
 func (s *BasicTestSuite) TestEmptyRepoInGreenfield(c *C) {
 	newEmptyGreenfieldRepo(c)
 }
+
+func (s *BasicTestSuite) TestCloneEmptyGit(c *C) {
+	// clone the empty repo
+	_, err := git.Clone(memory.NewStorage(), memfs.New(), &git.CloneOptions{
+		URL: "https://github.com/octothomas/0000.git",
+	})
+	if err != nil {
+		fmt.Println("err: ", err)
+		return
+	}
+}
