@@ -51,7 +51,7 @@ var cloneCmd = &cobra.Command{
 		dot, _ := fs.Chroot(".git")
 		_, err = git.Clone(filesystem.NewStorage(dot, cache.NewObjectLRUDefault()), osfs.New(path+repoName), &git.CloneOptions{
 			URL:           endpoint.String(),
-			ReferenceName: "refs/heads/master",
+			ReferenceName: DefaultBranchReferenceName,
 			SingleBranch:  true,
 		})
 		if err != nil {
