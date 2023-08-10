@@ -5,18 +5,18 @@ Git, created by Linus Torvalds in 2005, has become one of the most widely-used v
 
 As the Web3 field continues to grow, more and more people are recognizing the significance of ownership. To avoid being at the mercy of centralized platforms, many users are opting to store their data in decentralized storage networks. The Greenfield storage network, recently introduced by BNB Chain, has emerged as a powerful player in this space. It offers not only decentralized data storage but also unique permission management features. Furthermore, its cross-chain programming model with the BSC network opens up a world of possibilities for this ecosystem.
 
-codexfield has emerged as an innovative solution that allows developers to save their code on the decentralized storage network Greenfield, the code saved on Greenfield will be distributed throughout the Storage Provider network, enabling it to resist censorship while being readily accessible, which provides developers with complete ownership of their codes.
+CodexField has emerged as an innovative solution that allows developers to save their code on the decentralized storage network Greenfield, the code saved on Greenfield will be distributed throughout the Storage Provider network, enabling it to resist censorship while being readily accessible, which provides developers with complete ownership of their codes.
 
-codexfield is a decentralized platform aimed at developers, which provides a fully compatible experience with Git, allowing developers to use the toolset to develop and upload code to Greenfield. Furthurmore, codexfield proposes an innovative solution for trading codes named Code Marketplace, which is a platform where developers can sell their code saved on Greenfield at their own prices. To ensure quality, codexfield also introduces a rating mechanism, which enables users to rate the codes, creating a reputation-based trading platform for developers on the blockchain.
+CodexField is a decentralized platform aimed at developers, which provides a fully compatible experience with Git, allowing developers to use the toolset to develop and upload code to Greenfield. Furthurmore, codexfield proposes an innovative solution for trading codes named Code Marketplace, which is a platform where developers can sell their code saved on Greenfield at their own prices. To ensure quality, codexfield also introduces a rating mechanism, which enables users to rate the codes, creating a reputation-based trading platform for developers on the blockchain.
 
 
 # Gitd 
 
-Gitd means “Git for Codefiled”, or in other words, “Git for Decentralized Storage”. The Gitd tool is fully compatible with Git's functionality and usage, enabling developers to use Gitd for version control and code submission.
+Gitd means “Git for CodexField”, or in other words, “Git for Decentralized Storage”. The Gitd tool is fully compatible with Git's functionality and usage, enabling developers to use Gitd for version control and code submission.
 
-The CodeSync plugin facilitates one-click migration of user-submitted code from Github to codexfield, saving it on the Greenfield network.
+The CodeSync plugin facilitates one-click migration of user-submitted code from Github to CodexField, saving it on the Greenfield network.
 
-codexfield frontend is a web-hosted frontend page setup on Greenfield, which allows users to view and manage code stored in Greenfield through Gitd.
+CodexField frontend is a web-hosted frontend page setup on Greenfield, which allows users to view and manage code stored in Greenfield through Gitd.
 
 By default, the code uploaded through Gitd is set to private access, visible only to the author. However, users can choose to make their code public, which will be displayed on codexfield and visible to all users. Moreover, users can list their private code for sale on the Code Marketplace.
 
@@ -51,7 +51,9 @@ make build
 ```shell
 cd <repo>
 echo "Hello CodexField!" >> README.md
-./build/bin/gitd push origin main
+./build/bin/gitd add README.md
+./build/bin/gitd commit -m "add README.md"
+./build/bin/gitd push origin main -f  // when push firstly, please use force push. will fix later.
 ```
 
 ## Clone 
