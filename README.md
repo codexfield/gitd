@@ -20,6 +20,48 @@ codexfield frontend is a web-hosted frontend page setup on Greenfield, which all
 
 By default, the code uploaded through Gitd is set to private access, visible only to the author. However, users can choose to make their code public, which will be displayed on codexfield and visible to all users. Moreover, users can list their private code for sale on the Code Marketplace.
 
+# Usage
+## Set environment
+
+```shell
+export GREENFIELD_CHAIN_ID=greenfield_5600-1
+# use metamask to generate a new account and get your private key
+# use greenfield testnet faucet to get some testBNB
+export GREENFIELD_PRIVATE_KEY=xxxx
+```
+## Build & Install
+
+```shell
+git clone https://github.com/codexfield/gitd.git
+make build
+```
+
+## Create A New Repo In Greenfield
+
+```shell
+./build/bin/gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>:<repoName>
+```
+
+## Init A Repo Locally
+```shell
+./build/bin/gitd init
+```
+
+## Push to Greenfield Repo
+```shell
+cd <repo>
+echo "Hello CodexField!" >> README.md
+./build/bin/gitd push origin main
+```
+
+## Clone 
+
+```shell
+cd <new_folder>
+./build/bin/gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>:<repoName>
+```
+
+
 # Reference
 
 - [go git](https://github.com/go-git/go-git): go-git is a highly extensible git implementation library written in pure Go.
