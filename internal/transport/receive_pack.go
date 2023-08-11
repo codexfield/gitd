@@ -3,7 +3,6 @@ package transport
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/packfile"
 	"github.com/go-git/go-git/v5/plumbing/protocol/packp"
@@ -23,6 +22,8 @@ type rpSession struct {
 
 var (
 	ErrUpdateReference = errors.New("failed to update ref")
+	ErrCreateReference = errors.New("failed to create ref")
+	ErrDeleteReference = errors.New("failed to delete ref")
 )
 
 func (s *rpSession) ReceivePack(ctx context.Context, req *packp.ReferenceUpdateRequest) (*packp.ReportStatus, error) {
@@ -149,8 +150,8 @@ func (s *rpSession) reportStatus() *packp.ReportStatus {
 }
 
 func referenceExists(s storer.ReferenceStorer, n plumbing.ReferenceName) (bool, error) {
-	_, err := s.Reference(n)
-	if err == plumbing.ErrReferenceNotFound {
+	ref, err := s.Reference(n)
+	if err == plumbing.ErrReferenceNotFound || (err == nil && ref.Type() == plumbing.HashReference && ref.Hash() == plumbing.ZeroHash) {
 		return false, nil
 	}
 
@@ -168,8 +169,7 @@ func (s *rpSession) updateReferences(req *packp.ReferenceUpdateRequest) {
 		switch cmd.Action() {
 		case packp.Create:
 			if exists {
-				fmt.Println("new: ", cmd.New.String(), "old: ", cmd.Old.String())
-				s.setStatus(cmd.Name, ErrUpdateReference)
+				s.setStatus(cmd.Name, ErrCreateReference)
 				continue
 			}
 
@@ -178,7 +178,7 @@ func (s *rpSession) updateReferences(req *packp.ReferenceUpdateRequest) {
 			s.setStatus(cmd.Name, err)
 		case packp.Delete:
 			if !exists {
-				s.setStatus(cmd.Name, ErrUpdateReference)
+				s.setStatus(cmd.Name, ErrDeleteReference)
 				continue
 			}
 
