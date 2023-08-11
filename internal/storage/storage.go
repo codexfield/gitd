@@ -22,7 +22,7 @@ type GnfdStorage struct {
 }
 
 func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorage, error) {
-	fmt.Println("ChainID: ", chainID, " rpcAddress: ", rpcAddress, " privateKey: ", privateKey, " bucketName: ", bucketName)
+	//fmt.Println("ChainID: ", chainID, " rpcAddress: ", rpcAddress, " privateKey: ", privateKey, " bucketName: ", bucketName)
 	account, err := types.NewAccountFromPrivateKey("gitd", privateKey)
 	if err != nil {
 		fmt.Println("New storage error: ", err)
@@ -34,12 +34,12 @@ func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorag
 		return nil, err
 	}
 
-	block, err := gnfdClient.GetLatestBlock(context.Background())
+	_, err = gnfdClient.GetLatestBlock(context.Background())
 	if err != nil {
 		fmt.Println("New storage error: ", err)
 		return nil, err
 	}
-	fmt.Println("New Greenfield storage success, chainID: ", block.ChainID, "height: ", block.Height)
+	//fmt.Println("New Greenfield storage success, chainID: ", block.ChainID, "height: ", block.Height)
 
 	return &GnfdStorage{
 		GnfdClient: gnfdClient,
