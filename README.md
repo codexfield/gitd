@@ -33,24 +33,30 @@ export GREENFIELD_PRIVATE_KEY=xxxx
 
 ```shell
 git clone https://github.com/codexfield/gitd.git
+export CGO_CFLAGS="-O -D__BLST_PORTABLE__"
+export CGO_CFLAGS_ALLOW="-O -D__BLST_PORTABLE__"
 make build
 ```
 
 ## Create A New Repo In Greenfield
 
+The bucket name should be in lower case, use [convertcase tool here](https://convertcase.net/).
+
 ```shell
-./build/bin/gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>:<repoName>
+./build/bin/gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>-<repoName>
 ```
 
 ## Init A Repo Locally
 ```shell
+mkdir <repo>
+cd <repo>
 ./build/bin/gitd init
 ```
 
 ## Push to Greenfield Repo
 ```shell
-cd <repo>
-echo "Hello CodexField!" >> README.md
+./build/bin/gitd remote add origin gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>-<repoName>
+echo "Hello CodexField" >> README.md
 ./build/bin/gitd add README.md
 ./build/bin/gitd commit -m "add README.md"
 ./build/bin/gitd push origin main -f  // when push firstly, please use force push. will fix later.
@@ -60,7 +66,7 @@ echo "Hello CodexField!" >> README.md
 
 ```shell
 cd <new_folder>
-./build/bin/gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>:<repoName>
+./build/bin/gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>-<repoName>
 ```
 
 

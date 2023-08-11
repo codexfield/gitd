@@ -9,6 +9,7 @@ require (
 	github.com/go-git/go-git-fixtures/v4 v4.3.2-0.20230305113008-0c11038e723f
 	github.com/go-git/go-git/v5 v5.8.1
 	github.com/spf13/cobra v1.7.0
+	golang.org/x/mod v0.10.0
 	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c
 )
 
@@ -148,7 +149,6 @@ require (
 	go.etcd.io/bbolt v1.3.7 // indirect
 	golang.org/x/crypto v0.11.0 // indirect
 	golang.org/x/exp v0.0.0-20230515195305-f3d0a9c9a5cc // indirect
-	golang.org/x/mod v0.10.0 // indirect
 	golang.org/x/net v0.12.0 // indirect
 	golang.org/x/sys v0.10.0 // indirect
 	golang.org/x/term v0.10.0 // indirect
