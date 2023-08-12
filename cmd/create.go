@@ -42,7 +42,7 @@ var createCmd = &cobra.Command{
 			fmt.Printf("New endpoint error: %s", err)
 			return
 		}
-		fmt.Println("Endpoint: ", endpoint.String())
+		//fmt.Println("Endpoint: ", endpoint.String())
 
 		bucketName, _ := strings.CutPrefix(endpoint.Path, "/")
 		newStorage, err := storage.NewStorage(
@@ -84,6 +84,7 @@ var createCmd = &cobra.Command{
 			fmt.Println("Set Reference ", DefaultBranchReferenceName, "error: ", err)
 			return
 		}
+		fmt.Println("Created successfully!")
 	},
 }
 
