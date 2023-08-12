@@ -87,7 +87,7 @@ func (s *GnfdStorage) has(key string) (bool, error) {
 }
 
 func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
-	fmt.Println("bucketName: ", s.bucketName, " key: ", key, "isOverwrite: ", isOverWrite)
+	//fmt.Println("bucketName: ", s.bucketName, " key: ", key, "isOverwrite: ", isOverWrite)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	object, err := s.GnfdClient.HeadObject(ctx, s.bucketName, key)
