@@ -44,18 +44,18 @@ var createCmd = &cobra.Command{
 		}
 		//fmt.Println("Endpoint: ", endpoint.String())
 
-		bucketName, _ := strings.CutPrefix(endpoint.Path, "/")
+		repoName, _ := strings.CutPrefix(endpoint.Path, "/")
 		newStorage, err := storage.NewStorage(
 			os.Getenv(transport.EnvChainID),
 			"https://"+endpoint.Host+":"+strconv.Itoa(endpoint.Port),
 			os.Getenv(transport.EnvPrivateKey),
-			bucketName,
+			repoName,
 		)
 		if err != nil {
 			fmt.Printf("New storage error: %s", err)
 			return
 		}
-		_, err = newStorage.GnfdClient.HeadBucket(context.Background(), bucketName)
+		_, err = newStorage.GnfdClient.HeadBucket(context.Background(), newStorage.GetBucketName())
 		if err != nil {
 			if strings.Contains(err.Error(), "No such bucket") {
 				providers, err := newStorage.GnfdClient.ListStorageProviders(context.Background(), true)
@@ -64,7 +64,7 @@ var createCmd = &cobra.Command{
 					return
 				}
 				if len(providers) > 0 {
-					_, err := newStorage.GnfdClient.CreateBucket(context.Background(), bucketName, providers[0].OperatorAddress, types.CreateBucketOptions{})
+					_, err := newStorage.GnfdClient.CreateBucket(context.Background(), newStorage.GetBucketName(), providers[0].OperatorAddress, types.CreateBucketOptions{})
 					if err != nil {
 						fmt.Println("create bucket error: ", err)
 						return

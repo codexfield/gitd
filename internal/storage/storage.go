@@ -18,11 +18,12 @@ import (
 
 type GnfdStorage struct {
 	GnfdClient client.Client
-	bucketName string
+	RepoName   string
+	Account    *types.Account
 }
 
 func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorage, error) {
-	//fmt.Println("ChainID: ", chainID, " rpcAddress: ", rpcAddress, " privateKey: ", privateKey, " bucketName: ", bucketName)
+	//fmt.Println("ChainID: ", chainID, " rpcAddress: ", rpcAddress, " privateKey: ", privateKey, " RepoName: ", RepoName)
 	account, err := types.NewAccountFromPrivateKey("gitd", privateKey)
 	if err != nil {
 		fmt.Println("New storage error: ", err)
@@ -43,8 +44,13 @@ func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorag
 
 	return &GnfdStorage{
 		GnfdClient: gnfdClient,
-		bucketName: bucketName,
+		RepoName:   bucketName,
+		Account:    account,
 	}, nil
+}
+
+func (s *GnfdStorage) GetBucketName() string {
+	return strings.ToLower(s.Account.GetAddress().String()) + "-" + s.RepoName
 }
 
 func (s *GnfdStorage) NewEncodedObject() plumbing.EncodedObject {
@@ -242,7 +248,7 @@ func (s *GnfdStorage) Reference(name plumbing.ReferenceName) (*plumbing.Referenc
 func (s *GnfdStorage) IterReferences() (storer.ReferenceIter, error) {
 	refKeys, _, err := s.list(ReferenceKey, "", math.MaxUint64)
 	if err != nil {
-		fmt.Println("list failed, error: ", err, ", bucketName: ", s.bucketName)
+		fmt.Println("list failed, error: ", err, ", RepoName: ", s.GetBucketName())
 		return nil, err
 	}
 
