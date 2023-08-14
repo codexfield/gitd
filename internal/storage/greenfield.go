@@ -13,7 +13,7 @@ import (
 func (s *GnfdStorage) list(prefix, startAfter string, limit uint64) ([]string, string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	listResult, err := s.GnfdClient.ListObjects(ctx, s.bucketName,
+	listResult, err := s.GnfdClient.ListObjects(ctx, s.GetBucketName(),
 		types.ListObjectsOptions{
 			Prefix:          prefix,
 			MaxKeys:         limit,
@@ -31,7 +31,7 @@ func (s *GnfdStorage) list(prefix, startAfter string, limit uint64) ([]string, s
 }
 
 func (s *GnfdStorage) head(key string) (int64, error) {
-	object, err := s.GnfdClient.HeadObject(context.Background(), s.bucketName, key)
+	object, err := s.GnfdClient.HeadObject(context.Background(), s.GetBucketName(), key)
 	if err != nil {
 		return 0, err
 	}
@@ -42,7 +42,7 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 	//fmt.Println("get key:", key)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	objectDetails, err := s.GnfdClient.HeadObject(ctx, s.bucketName, key)
+	objectDetails, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
 	if err != nil {
 		return nil, err
 	}
@@ -51,7 +51,7 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 		return []byte(""), nil
 	}
 
-	object, status, err := s.GnfdClient.GetObject(ctx, s.bucketName, key, types.GetObjectOptions{})
+	object, status, err := s.GnfdClient.GetObject(ctx, s.GetBucketName(), key, types.GetObjectOptions{})
 	_ = status
 	if err != nil {
 		return nil, err
@@ -67,11 +67,11 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 func (s *GnfdStorage) delete(key string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	_, err := s.GnfdClient.HeadObject(ctx, s.bucketName, key)
+	_, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
 	if err != nil {
 		return err
 	}
-	_, err = s.GnfdClient.DeleteObject(ctx, s.bucketName, key, types.DeleteObjectOption{})
+	_, err = s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
 	if err != nil {
 		return err
 	}
@@ -79,7 +79,7 @@ func (s *GnfdStorage) delete(key string) error {
 }
 
 func (s *GnfdStorage) has(key string) (bool, error) {
-	object, err := s.GnfdClient.HeadObject(context.Background(), s.bucketName, key)
+	object, err := s.GnfdClient.HeadObject(context.Background(), s.GetBucketName(), key)
 	if err == nil && object != nil {
 		return true, nil
 	}
@@ -87,17 +87,17 @@ func (s *GnfdStorage) has(key string) (bool, error) {
 }
 
 func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
-	//fmt.Println("bucketName: ", s.bucketName, " key: ", key, "isOverwrite: ", isOverWrite)
+	//fmt.Println("RepoName: ", s.GetBucketName(), " key: ", key, "isOverwrite: ", isOverWrite)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	object, err := s.GnfdClient.HeadObject(ctx, s.bucketName, key)
+	object, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
 	if err != nil && !strings.Contains(err.Error(), "No such object") {
 		return err
 	}
 
 	if err == nil && object != nil {
 		if isOverWrite {
-			_, err2 := s.GnfdClient.DeleteObject(ctx, s.bucketName, key, types.DeleteObjectOption{})
+			_, err2 := s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
 			if err2 != nil {
 				return err2
 			}
@@ -108,7 +108,7 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 
 	txHash, err := s.GnfdClient.CreateObject(
 		ctx,
-		s.bucketName,
+		s.GetBucketName(),
 		key,
 		bytes.NewReader(value),
 		types.CreateObjectOptions{},
@@ -125,7 +125,7 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 	}
 
 	if len(value) != 0 {
-		err = s.GnfdClient.PutObject(ctx, s.bucketName, key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
+		err = s.GnfdClient.PutObject(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
 		if err != nil {
 			fmt.Println("PutObject err : ", err)
 			return err
