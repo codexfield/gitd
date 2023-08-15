@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
-	"golang.org/x/mod/module"
 )
 
 // addCmd represents the add command
@@ -27,14 +26,10 @@ var addCmd = &cobra.Command{
 			return
 		}
 		for _, arg := range args {
-			if module.CheckFilePath(arg) == nil {
-				_, err := w.Add(arg)
-				if err != nil {
-					fmt.Println("Add path failed, error: ", err)
-					return
-				}
-			} else {
-				fmt.Println("Check file path failed, error: ", err, "path", arg)
+			_, err := w.Add(arg)
+			if err != nil {
+				fmt.Println("Add path failed, error: ", err)
+				return
 			}
 		}
 	},
