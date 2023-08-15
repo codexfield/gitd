@@ -26,11 +26,6 @@ var commitCmd = &cobra.Command{
 			return
 		}
 		msg, _ := cmd.Flags().GetString("message")
-		//amend, _ := cmd.Flags().GetBool("amend")
-		//
-		//if amend {
-		//	panic("implement me")
-		//}
 		_, err = w.Commit(msg, &git.CommitOptions{})
 		if err != nil {
 			return
@@ -40,6 +35,5 @@ var commitCmd = &cobra.Command{
 
 func init() {
 	commitCmd.Flags().StringP("message", "m", "", "Commit message")
-	//commitCmd.Flags().Bool("amend", false, "amend previous commit")
 	rootCmd.AddCommand(commitCmd)
 }
