@@ -14,15 +14,10 @@ import (
 // remoteCmd represents the remote command
 var remoteCmd = &cobra.Command{
 	Use:   "remote",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "usage: git remote [-v | --verbose]\n",
+	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("remote called")
+		showSubCmd.Run(cmd, args)
 	},
 }
 
@@ -60,9 +55,14 @@ var showSubCmd = &cobra.Command{
 			fmt.Println("Open repository failed, error: ", err)
 			return
 		}
+		verbose, _ := cmd.Flags().GetBool("verbose")
 		remotes, err := r.Remotes()
 		for _, remote := range remotes {
-			fmt.Println(remote.String())
+			if verbose {
+				fmt.Println(remote.String())
+			} else {
+				fmt.Println(remote.Config().Name)
+			}
 		}
 	},
 }
@@ -93,4 +93,6 @@ func init() {
 	remoteCmd.AddCommand(showSubCmd)
 	remoteCmd.AddCommand(removeSubCmd)
 	rootCmd.AddCommand(remoteCmd)
+
+	commitCmd.Flags().BoolP("verbose", "v", false, "amend previous commit")
 }

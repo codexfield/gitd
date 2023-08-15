@@ -40,10 +40,8 @@ make build
 
 ## Create A New Repo In Greenfield
 
-The bucket name should be in lower case, use [convertcase tool here](https://convertcase.net/).
-
 ```shell
-./build/bin/gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>-<repoName>
+./build/bin/gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 ```
 
 ## Init A Repo Locally
@@ -55,7 +53,7 @@ cd <repo>
 
 ## Push to Greenfield Repo
 ```shell
-./build/bin/gitd remote add origin gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>-<repoName>
+./build/bin/gitd remote add origin gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 echo "Hello CodexField" >> README.md
 ./build/bin/gitd add README.md
 ./build/bin/gitd commit -m "add README.md"
@@ -66,9 +64,8 @@ echo "Hello CodexField" >> README.md
 
 ```shell
 cd <new_folder>
-./build/bin/gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<Address>-<repoName>
+./build/bin/gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 ```
-
 
 # Reference
 
