@@ -95,7 +95,7 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		return err
 	}
 
-	if err == nil && object != nil {
+	if err == nil && object.ObjectInfo != nil {
 		if isOverWrite {
 			_, err2 := s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
 			if err2 != nil {

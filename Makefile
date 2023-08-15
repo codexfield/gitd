@@ -1,4 +1,4 @@
 .PHONY: build
 
 build:
-	go build -o build/bin/gitd main.go
+	go build -o build/bin/gitd gitd.go
