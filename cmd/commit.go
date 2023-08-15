@@ -13,7 +13,7 @@ import (
 var commitCmd = &cobra.Command{
 	Use:   "commit",
 	Short: "Record changes to the repository",
-	Long:  `usage: git commit [-m <msg>]  [--amend]`,
+	Long:  `usage: git commit -m <msg>`,
 	Run: func(cmd *cobra.Command, args []string) {
 		r, err := git.PlainOpen("./")
 		if err != nil {
@@ -26,11 +26,11 @@ var commitCmd = &cobra.Command{
 			return
 		}
 		msg, _ := cmd.Flags().GetString("message")
-		amend, _ := cmd.Flags().GetBool("amend")
-
-		if amend {
-			panic("implement me")
-		}
+		//amend, _ := cmd.Flags().GetBool("amend")
+		//
+		//if amend {
+		//	panic("implement me")
+		//}
 		_, err = w.Commit(msg, &git.CommitOptions{})
 		if err != nil {
 			return
@@ -40,6 +40,6 @@ var commitCmd = &cobra.Command{
 
 func init() {
 	commitCmd.Flags().StringP("message", "m", "", "Commit message")
-	commitCmd.Flags().Bool("amend", false, "amend previous commit")
+	//commitCmd.Flags().Bool("amend", false, "amend previous commit")
 	rootCmd.AddCommand(commitCmd)
 }
