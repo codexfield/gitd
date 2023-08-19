@@ -26,12 +26,22 @@ var statusCmd = &cobra.Command{
 			fmt.Println("Get worktree failed, error: ", err)
 			return
 		}
+		head, err := r.Head()
+		if err != nil || !head.Name().IsBranch() {
+			fmt.Println("Get repo head error: ", err)
+		}
+		fmt.Println("On branch ", head.Name().Short())
 		s, err := w.Status()
 		if err != nil {
 			fmt.Println("Get worktree status failed, error: ", err)
 			return
 		}
-		fmt.Println(s.String())
+		if s.IsClean() {
+			fmt.Println("nothing to commit, working tree clean")
+		} else {
+			fmt.Println("Changes not staged for commit:\n  (use \"git add <file>...\" to update what will be committed)\n  (use \"git restore <file>...\" to discard changes in working directory)\n")
+			fmt.Println("  " + s.String())
+		}
 	},
 }
 
