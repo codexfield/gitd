@@ -21,7 +21,6 @@ jobs:
     - name: Build binaries
       run: |
         go build -o gitd_linux_amd64 
-        GOOS=windows GOARCH=amd64 go build -o gitd_windows_amd64.exe
 
     - name: Upload binaries
       uses: actions/upload-artifact@v2
