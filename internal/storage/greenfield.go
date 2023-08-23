@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/bnb-chain/greenfield-go-sdk/types"
+	types2 "github.com/bnb-chain/greenfield/x/storage/types"
 	"io"
 	"strings"
 	"time"
@@ -97,38 +98,47 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 
 	if err == nil && object.ObjectInfo != nil {
 		if isOverWrite {
-			_, err2 := s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
-			if err2 != nil {
-				return err2
+			if object.ObjectInfo.ObjectStatus == types2.OBJECT_STATUS_SEALED {
+				_, err2 := s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
+				if err2 != nil {
+					return err2
+				}
+				time.Sleep(1 * time.Second)
+			} else if object.ObjectInfo.ObjectStatus == types2.OBJECT_STATUS_CREATED {
+				_, err2 := s.GnfdClient.CancelCreateObject(ctx, s.GetBucketName(), key, types.CancelCreateOption{})
+				if err2 != nil {
+					return err2
+				}
+				time.Sleep(1 * time.Second)
 			}
 		} else {
 			return nil
 		}
 	}
 
-	txHash, err := s.GnfdClient.CreateObject(
-		ctx,
-		s.GetBucketName(),
-		key,
-		bytes.NewReader(value),
-		types.CreateObjectOptions{},
-	)
-	if err != nil {
-		fmt.Println("TxHash: ", txHash)
-		return err
-	}
-
-	_, err = s.GnfdClient.WaitForTx(ctx, txHash)
-	if err != nil {
-		fmt.Println("TxHash: ", txHash, "err: ", err)
-		return err
+	for i := 0; i <= 3; i++ {
+		txHash, err := s.GnfdClient.CreateObject(
+			ctx,
+			s.GetBucketName(),
+			key,
+			bytes.NewReader(value),
+			types.CreateObjectOptions{},
+		)
+		if err != nil {
+			fmt.Println("TxHash: ", txHash, "err: ", err)
+		} else {
+			break
+		}
+		time.Sleep(1 * time.Second)
 	}
 
 	if len(value) != 0 {
-		err = s.GnfdClient.PutObject(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
-		if err != nil {
-			fmt.Println("PutObject err : ", err)
-			return err
+		for i := 0; i <= 3; i++ {
+			err = s.GnfdClient.PutObject(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
+			if err != nil {
+				fmt.Println("PutObject err : ", err)
+				return err
+			}
 		}
 	}
 
