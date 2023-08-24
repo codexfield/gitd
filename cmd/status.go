@@ -5,7 +5,9 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/spf13/cobra"
 )
@@ -27,10 +29,22 @@ var statusCmd = &cobra.Command{
 			return
 		}
 		head, err := r.Head()
-		if err != nil || !head.Name().IsBranch() {
-			fmt.Println("Get repo head error: ", err)
+		if err != nil {
+			if err == plumbing.ErrReferenceNotFound {
+				head, err = r.Storer.Reference(plumbing.HEAD)
+				if err != nil {
+					fmt.Println("Get empty repo head error: ", err)
+					return
+				}
+				fmt.Println("On branch ", head.Target().Short())
+			} else {
+				fmt.Println("Get repo head error: ", err)
+				return
+			}
+		} else {
+			fmt.Println("On branch ", head.Name().Short())
 		}
-		fmt.Println("On branch ", head.Name().Short())
+
 		s, err := w.Status()
 		if err != nil {
 			fmt.Println("Get worktree status failed, error: ", err)
