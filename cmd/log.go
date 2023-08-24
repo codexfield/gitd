@@ -6,10 +6,12 @@ package cmd
 import (
 	"bufio"
 	"fmt"
-	"github.com/go-git/go-git/v5"
-	"github.com/spf13/cobra"
 	"os"
 	"strings"
+
+	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/plumbing"
+	"github.com/spf13/cobra"
 )
 
 // logCmd represents the log command
@@ -25,7 +27,11 @@ var logCmd = &cobra.Command{
 		}
 		commitIter, err := r.Log(&git.LogOptions{})
 		if err != nil {
-			fmt.Println("Log failed, error: ", err)
+			if err == plumbing.ErrReferenceNotFound {
+				fmt.Println("Empty repository!")
+			} else {
+				fmt.Println("Log failed, error: ", err)
+			}
 			return
 		}
 		i := 0

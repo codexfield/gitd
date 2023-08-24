@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"fmt"
+
+	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/cache"
@@ -16,10 +18,7 @@ import (
 var initCmd = &cobra.Command{
 	Use:   "init",
 	Short: "Create an empty Git repository or reinitialize an existing one",
-	Long: `usage: gitd init [-q | --quiet] [--bare] [--template=<template-directory>]
-                [--separate-git-dir <git-dir>] [--object-format=<format>]
-                [-b <branch-name> | --initial-branch=<branch-name>]
-                [--shared[=<permissions>]] [<directory>]`,
+	Long:  `usage: gitd init [<directory>]`,
 
 	Run: func(cmd *cobra.Command, args []string) {
 		var path string
@@ -31,7 +30,7 @@ var initCmd = &cobra.Command{
 
 		fs := osfs.New(path)
 		dot, _ := fs.Chroot(".git")
-		_, err := git.InitWithOptions(filesystem.NewStorage(dot, cache.NewObjectLRUDefault()), nil, git.InitOptions{
+		_, err := git.InitWithOptions(filesystem.NewStorage(dot, cache.NewObjectLRUDefault()), memfs.New(), git.InitOptions{
 			DefaultBranch: DefaultBranchReferenceName,
 		})
 		if err != nil {

@@ -4,11 +4,12 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/bnb-chain/greenfield-go-sdk/types"
-	types2 "github.com/bnb-chain/greenfield/x/storage/types"
 	"io"
 	"strings"
 	"time"
+
+	"github.com/bnb-chain/greenfield-go-sdk/types"
+	storagetypes "github.com/bnb-chain/greenfield/x/storage/types"
 )
 
 func (s *GnfdStorage) list(prefix, startAfter string, limit uint64) ([]string, string, error) {
@@ -98,46 +99,52 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 
 	if err == nil && object.ObjectInfo != nil {
 		if isOverWrite {
-			if object.ObjectInfo.ObjectStatus == types2.OBJECT_STATUS_SEALED {
+			if object.ObjectInfo.ObjectStatus == storagetypes.OBJECT_STATUS_SEALED {
 				_, err2 := s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
 				if err2 != nil {
 					return err2
 				}
-				time.Sleep(1 * time.Second)
-			} else if object.ObjectInfo.ObjectStatus == types2.OBJECT_STATUS_CREATED {
+			} else {
 				_, err2 := s.GnfdClient.CancelCreateObject(ctx, s.GetBucketName(), key, types.CancelCreateOption{})
 				if err2 != nil {
 					return err2
 				}
-				time.Sleep(1 * time.Second)
 			}
+			time.Sleep(3 * time.Second)
 		} else {
 			return nil
 		}
 	}
 
-	for i := 0; i <= 3; i++ {
-		txHash, err := s.GnfdClient.CreateObject(
+	for i := 0; i < 3; i++ {
+		_, err = s.GnfdClient.CreateObject(
 			ctx,
 			s.GetBucketName(),
 			key,
 			bytes.NewReader(value),
 			types.CreateObjectOptions{},
 		)
-		if err != nil {
-			fmt.Println("TxHash: ", txHash, "err: ", err)
-		} else {
-			break
-		}
-		time.Sleep(1 * time.Second)
-	}
 
-	if len(value) != 0 {
-		for i := 0; i <= 3; i++ {
+		if err != nil {
+			fmt.Println("Create Object failed, err: ", err)
+			return err
+		}
+
+		if len(value) != 0 {
 			err = s.GnfdClient.PutObject(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
 			if err != nil {
-				fmt.Println("PutObject err : ", err)
-				return err
+				if strings.Contains(err.Error(), "invalid payload data integrity hash") {
+					_, err2 := s.GnfdClient.CancelCreateObject(ctx, s.GetBucketName(), key, types.CancelCreateOption{})
+					if err2 != nil {
+						return err2
+					}
+					time.Sleep(100 * time.Second)
+				} else {
+					fmt.Println("PutObject err : ", err.Error())
+					return err
+				}
+			} else {
+				break
 			}
 		}
 	}
