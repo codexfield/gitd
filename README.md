@@ -32,10 +32,7 @@ export GREENFIELD_PRIVATE_KEY=xxxx
 ## Build & Install
 
 ```shell
-git clone https://github.com/codexfield/gitd.git
-export CGO_CFLAGS="-O -D__BLST_PORTABLE__"
-export CGO_CFLAGS_ALLOW="-O -D__BLST_PORTABLE__"
-make build
+curl -fsSL https://raw.githubusercontent.com/codexfield/gitd/develop/install.sh | bash
 ```
 
 ## Create A New Repo In Greenfield
