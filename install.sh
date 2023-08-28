@@ -5,7 +5,7 @@ version=0.0.1
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
   goos=linux
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  goos=mac
+  goos=macos
 else
   echo "Error: The current os is not supported at this time" 1>&2
   exit 1
