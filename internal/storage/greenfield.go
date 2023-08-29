@@ -122,20 +122,22 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		time.Sleep(time.Duration(time.Now().Unix() - create_time))
 	}
 
+	retry_create := true
 	for i := 0; i < 3; i++ {
-		_, err = s.GnfdClient.CreateObject(
-			ctx,
-			s.GetBucketName(),
-			key,
-			bytes.NewReader(value),
-			types.CreateObjectOptions{},
-		)
+		if retry_create {
+			_, err = s.GnfdClient.CreateObject(
+				ctx,
+				s.GetBucketName(),
+				key,
+				bytes.NewReader(value),
+				types.CreateObjectOptions{},
+			)
 
-		if err != nil {
-			fmt.Println("Create Object failed, err: ", err)
-			return err
+			if err != nil {
+				fmt.Println("Create Object failed, err: ", err)
+				return err
+			}
 		}
-
 		if len(value) != 0 {
 			err = s.GnfdClient.PutObject(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
 			if err != nil {
@@ -144,9 +146,10 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 					if err2 != nil {
 						return err2
 					}
+					time.Sleep(3 * time.Second)
 				} else {
-					fmt.Println("PutObject err : ", err.Error())
-					return err
+					retry_create = false
+					fmt.Println("Put Object to greenfield failed, err: ", err)
 				}
 			} else {
 				break
@@ -154,5 +157,5 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		}
 	}
 
-	return nil
+	return err
 }
