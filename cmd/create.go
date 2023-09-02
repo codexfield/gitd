@@ -8,14 +8,17 @@ import (
 	"fmt"
 	"gitd/internal/storage"
 	"gitd/internal/transport"
+	"math/rand"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+
 	"github.com/bnb-chain/greenfield-go-sdk/types"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	transport2 "github.com/go-git/go-git/v5/plumbing/transport"
-	"os"
-	"strconv"
-	"strings"
 
 	"github.com/spf13/cobra"
 )
@@ -63,8 +66,10 @@ var createCmd = &cobra.Command{
 					fmt.Println("list storage provider error: ", err)
 					return
 				}
+				r := rand.New(rand.NewSource(time.Now().Unix()))
+
 				if len(providers) > 0 {
-					_, err := newStorage.GnfdClient.CreateBucket(context.Background(), newStorage.GetBucketName(), providers[0].OperatorAddress, types.CreateBucketOptions{})
+					_, err := newStorage.GnfdClient.CreateBucket(context.Background(), newStorage.GetBucketName(), providers[r.Intn(len(providers))].OperatorAddress, types.CreateBucketOptions{})
 					if err != nil {
 						fmt.Println("create bucket error: ", err)
 						return
