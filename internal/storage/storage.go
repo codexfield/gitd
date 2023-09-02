@@ -50,7 +50,7 @@ func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorag
 }
 
 func (s *GnfdStorage) GetBucketName() string {
-	return strings.ToLower(s.Account.GetAddress().String()) + "-" + s.RepoName
+	return s.RepoName
 }
 
 func (s *GnfdStorage) NewEncodedObject() plumbing.EncodedObject {
