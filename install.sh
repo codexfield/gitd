@@ -1,16 +1,15 @@
 #!/bin/bash
 binary_name=gitd
 goos=$(uname)
-version=0.0.2
+version=0.0.3
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-  goos=linux
+	goos=linux
 elif [[ "$OSTYPE" == "darwin"* ]]; then
-  goos=macos
+	goos=macos
 else
-  echo "Error: The current os is not supported at this time" 1>&2
-  exit 1
+	echo "Error: The current os is not supported at this time" 1>&2
+	exit 1
 fi
-
 
 file_name=gitd-v${version}-${goos}
 
