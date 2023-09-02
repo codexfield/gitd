@@ -5,13 +5,14 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/cache"
 	transport2 "github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/storage/filesystem"
 	"github.com/spf13/cobra"
-	"strings"
 )
 
 // cloneCmd represents the clone command
@@ -58,6 +59,7 @@ var cloneCmd = &cobra.Command{
 			fmt.Println("Clone repo failed, error: ", err)
 			return
 		}
+		fmt.Println("Clone repo success.")
 	},
 }
 
