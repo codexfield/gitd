@@ -1,7 +1,7 @@
 #!/bin/bash
 binary_name=gitd
 goos=$(uname)
-version=0.0.3
+version=0.0.4
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	goos=linux
 elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -9,6 +9,16 @@ elif [[ "$OSTYPE" == "darwin"* ]]; then
 else
 	echo "Error: The current os is not supported at this time" 1>&2
 	exit 1
+fi
+
+# check the gitd if exist
+ret=0
+command -v gitd >/dev/null 2>&1 || { local ret=1; }
+
+# fail on non-zero return value
+if [ "$ret" -ne 0 ]; then
+	echo "delete the old gitd."
+	rm -rf $(which gitd)
 fi
 
 file_name=gitd-v${version}-${goos}
