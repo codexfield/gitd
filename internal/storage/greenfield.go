@@ -97,7 +97,6 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		return err
 	}
 
-	var create_time int64 = 0
 	if err == nil && object.ObjectInfo != nil {
 		if isOverWrite {
 			if object.ObjectInfo.ObjectStatus == storagetypes.OBJECT_STATUS_SEALED {
@@ -111,15 +110,10 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 					return err2
 				}
 			}
-			create_time = object.ObjectInfo.CreateAt
 			time.Sleep(3 * time.Second)
 		} else {
 			return nil
 		}
-	}
-
-	if time.Now().Unix()-create_time < int64(120*time.Second) {
-		time.Sleep(time.Duration(time.Now().Unix() - create_time))
 	}
 
 	retry_create := true
