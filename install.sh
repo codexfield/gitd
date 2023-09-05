@@ -1,7 +1,7 @@
 #!/bin/bash
 binary_name=gitd
 goos=$(uname)
-version=0.0.4
+version=0.0.5
 if [[ "$OSTYPE" == "linux-gnu"* ]]; then
 	goos=linux
 elif [[ "$OSTYPE" == "darwin"* ]]; then
