@@ -44,6 +44,10 @@ var createCmd = &cobra.Command{
 			return
 		}
 		//fmt.Println("Endpoint: ", endpoint.String())
+		force, err := cmd.Flags().GetBool("force")
+		if err != nil {
+			force = false
+		}
 
 		repoName, _ := strings.CutPrefix(endpoint.Path, "/")
 		newStorage, err := storage.NewStorage(
@@ -68,12 +72,17 @@ var createCmd = &cobra.Command{
 				if len(providers) > 0 {
 					_, err := newStorage.GnfdClient.CreateBucket(context.Background(), newStorage.GetBucketName(), providers[0].OperatorAddress, types.CreateBucketOptions{})
 					if err != nil {
-						fmt.Println("create bucket error: ", err)
+						fmt.Println("create repo error: ", err)
 						return
 					}
 				}
 			} else {
-				fmt.Println("head bucket error: ", err)
+				fmt.Println("create repo failed, error: ", err)
+				return
+			}
+		} else {
+			if !force {
+				fmt.Println("Repo already exist. use --force if needs overwrite.")
 				return
 			}
 		}
@@ -91,5 +100,6 @@ var createCmd = &cobra.Command{
 }
 
 func init() {
+	createCmd.Flags().BoolP("force", "f", false, "force create")
 	rootCmd.AddCommand(createCmd)
 }
