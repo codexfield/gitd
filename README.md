@@ -38,30 +38,30 @@ curl -fsSL https://raw.githubusercontent.com/codexfield/gitd/develop/install.sh 
 ## Create A New Repo In Greenfield
 
 ```shell
-./build/bin/gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
+gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 ```
 
 ## Init A Repo Locally
 ```shell
 mkdir <repo>
 cd <repo>
-./build/bin/gitd init
+gitd init
 ```
 
 ## Push to Greenfield Repo
 ```shell
-./build/bin/gitd remote add origin gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
+gitd remote add origin gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 echo "Hello CodexField" >> README.md
-./build/bin/gitd add README.md
-./build/bin/gitd commit -m "add README.md"
-./build/bin/gitd push origin main -f  // when push firstly, please use force push. will fix later.
+gitd add README.md
+gitd commit -m "add README.md"
+gitd push origin main -f  // when push firstly, please use force push. will fix later.
 ```
 
 ## Clone 
 
 ```shell
 cd <new_folder>
-./build/bin/gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
+gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 ```
 
 # Reference
