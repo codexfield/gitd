@@ -5,20 +5,15 @@ import (
 )
 
 const (
-	ReferenceKey  = "refs/"
-	ConfigKey     = "config/"
-	ObjectKey     = "objects/"
-	ObjectTypeKey = "types/"
+	ReferenceKey = "refs/"
+	ConfigKey    = "config/"
+	ObjectKey    = "objects/"
 )
 
 func buildReferenceKey(name plumbing.ReferenceName) string {
 	return ReferenceKey + name.String()
 }
 
-func buildObjectsKey(t plumbing.ObjectType, hash plumbing.Hash) string {
-	return ObjectKey + t.String() + "/" + hash.String()
-}
-
-func buildObjectTypeKey(hash plumbing.Hash) string {
-	return ObjectTypeKey + hash.String()
+func buildObjectsKey(hash plumbing.Hash) string {
+	return ObjectKey + hash.String()
 }

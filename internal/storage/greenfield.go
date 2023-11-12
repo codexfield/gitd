@@ -17,10 +17,9 @@ func (s *GnfdStorage) list(prefix, startAfter string, limit uint64) ([]string, s
 	defer cancel()
 	listResult, err := s.GnfdClient.ListObjects(ctx, s.GetBucketName(),
 		types.ListObjectsOptions{
-			Prefix:          prefix,
-			MaxKeys:         limit,
-			StartAfter:      startAfter,
-			EndPointOptions: &types.EndPointOptions{}})
+			Prefix:     prefix,
+			MaxKeys:    limit,
+			StartAfter: startAfter})
 	if err != nil {
 		return nil, "", err
 	}
