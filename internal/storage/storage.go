@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -13,11 +14,12 @@ import (
 	"github.com/go-git/go-git/v5/storage"
 	"io"
 	"math"
+	"strconv"
 	"strings"
 )
 
 type GnfdStorage struct {
-	GnfdClient client.Client
+	GnfdClient client.IClient
 	RepoName   string
 	Account    *types.Account
 }
@@ -26,21 +28,20 @@ func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorag
 	//fmt.Println("ChainID: ", chainID, " rpcAddress: ", rpcAddress, " privateKey: ", privateKey, " RepoName: ", RepoName)
 	account, err := types.NewAccountFromPrivateKey("gitd", privateKey)
 	if err != nil {
-		fmt.Println("New storage error: ", err)
+		fmt.Println("New account from private key error: ", err)
 		return nil, err
 	}
 	gnfdClient, err := client.New(chainID, rpcAddress, client.Option{DefaultAccount: account})
 	if err != nil {
-		fmt.Println("New storage error: ", err)
+		fmt.Println("New greenfield storage client error: ", err)
 		return nil, err
 	}
 
 	_, err = gnfdClient.GetLatestBlock(context.Background())
 	if err != nil {
-		fmt.Println("New storage error: ", err)
+		fmt.Println("Get latest block error: ", err)
 		return nil, err
 	}
-	//fmt.Println("New Greenfield storage success, chainID: ", block.ChainID, "height: ", block.Height)
 
 	return &GnfdStorage{
 		GnfdClient: gnfdClient,
@@ -67,68 +68,72 @@ func (s *GnfdStorage) SetEncodedObject(obj plumbing.EncodedObject) (plumbing.Has
 		return obj.Hash(), err
 	}
 
-	if err := s.setEncodedObjectType(obj); err != nil {
-		return obj.Hash(), err
-	}
-
-	err = s.put(buildObjectsKey(obj.Type(), obj.Hash()), c, false)
+	// {type} {length}\x00
+	var buffer bytes.Buffer
+	buffer.Write(obj.Type().Bytes())
+	buffer.Write([]byte(" "))
+	buffer.WriteString(strconv.Itoa(len(c)))
+	buffer.Write([]byte{0x00})
+	buffer.Write(c)
+	err = s.put(buildObjectsKey(obj.Hash()), buffer.Bytes(), false)
 	return obj.Hash(), err
-}
-
-func (s *GnfdStorage) setEncodedObjectType(obj plumbing.EncodedObject) error {
-	key := buildObjectTypeKey(obj.Hash())
-
-	return s.put(key, []byte(obj.Type().String()), false)
-}
-
-func (s *GnfdStorage) encodedObjectType(h plumbing.Hash) (plumbing.ObjectType, error) {
-	key := buildObjectTypeKey(h)
-	rec, err := s.get(key)
-	if err != nil {
-		return plumbing.AnyObject, err
-	}
-
-	if rec == nil {
-		return plumbing.AnyObject, plumbing.ErrObjectNotFound
-	}
-
-	return plumbing.ParseObjectType(string(rec[:]))
-
 }
 
 func (s *GnfdStorage) EncodedObject(t plumbing.ObjectType, h plumbing.Hash) (plumbing.EncodedObject, error) {
 	var err error
-	if t == plumbing.AnyObject {
-		t, err = s.encodedObjectType(h)
-		if err != nil {
-			return nil, err
-		}
-	}
 
-	key := buildObjectsKey(t, h)
-
-	rec, err := s.get(key)
+	// get object key
+	rec, err := s.get(buildObjectsKey(h))
 	if err != nil {
 		return nil, err
 	}
-
 	if rec == nil {
 		return nil, plumbing.ErrObjectNotFound
 	}
 
-	return objectFromRecord(rec, t)
+	return parseObjectFromBlob(t, rec)
 }
 
-func objectFromRecord(content []byte, t plumbing.ObjectType) (plumbing.EncodedObject, error) {
-	o := &plumbing.MemoryObject{}
-	o.SetType(t)
-	o.SetSize(int64(len(content)))
+func parseObjectFromBlob(t plumbing.ObjectType, blob []byte) (plumbing.EncodedObject, error) {
+	s := bytes.IndexByte(blob, 32) // first space
+	i := bytes.IndexByte(blob, 0)  // first null value
 
-	_, err := o.Write(content)
+	if s == -1 || i == -1 {
+		return nil, fmt.Errorf("invalid buffer format")
+	}
+
+	// get type of object
+	typeVal := string(blob[:s])
+	actualType, err := plumbing.ParseObjectType(typeVal)
+	if err != nil {
+		return nil, fmt.Errorf("parse object type failed")
+	}
+
+	if t != plumbing.AnyObject && actualType != t {
+		return nil, fmt.Errorf("the object type mismatch, %v - %v", t, actualType)
+	}
+
+	// get length of object
+	lengthBytes := blob[s+1 : i]
+	objectLength, err := strconv.Atoi(string(lengthBytes))
 	if err != nil {
 		return nil, err
 	}
 
+	actualLength := len(blob) - (i + 1)
+
+	// verify length
+	if objectLength != actualLength {
+		return nil, fmt.Errorf("length mismatch: expected %d bytes but got %d instead", objectLength, actualLength)
+	}
+	o := &plumbing.MemoryObject{}
+	o.SetType(actualType)
+	o.SetSize(int64(objectLength))
+
+	_, err = o.Write(blob[i+1:])
+	if err != nil {
+		return nil, err
+	}
 	return o, nil
 }
 
@@ -151,12 +156,12 @@ func NewEncodeObjectIter(t plumbing.ObjectType, s *GnfdStorage) *EncodedObjectIt
 
 func (i *EncodedObjectIter) Next() (plumbing.EncodedObject, error) {
 	if len(i.encodeObjects) == 0 {
-		objects, maxKey, err := i.s.list(ObjectTypeKey, i.nextKey, i.limitSizeOnce)
+		objects, maxKey, err := i.s.list(ObjectKey, i.nextKey, i.limitSizeOnce)
 		if err != nil {
 			return nil, err
 		}
 		for _, object := range objects {
-			hash, found := strings.CutPrefix(object, ObjectTypeKey)
+			hash, found := strings.CutPrefix(object, ObjectKey)
 			if !found {
 				panic("Iter encode objects error, prefix not found")
 			}
@@ -201,7 +206,7 @@ func (s *GnfdStorage) IterEncodedObjects(objectType plumbing.ObjectType) (storer
 }
 
 func (s *GnfdStorage) HasEncodedObject(hash plumbing.Hash) error {
-	found, err := s.has(buildObjectTypeKey(hash))
+	found, err := s.has(buildObjectsKey(hash))
 	if err != nil {
 		return err
 	}
@@ -213,7 +218,7 @@ func (s *GnfdStorage) HasEncodedObject(hash plumbing.Hash) error {
 }
 
 func (s *GnfdStorage) EncodedObjectSize(hash plumbing.Hash) (int64, error) {
-	return s.head(buildObjectTypeKey(hash))
+	return s.head(buildObjectsKey(hash))
 
 }
 
