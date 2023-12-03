@@ -5,17 +5,29 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"math"
+	"math/big"
+	"strconv"
+	"strings"
+
 	"github.com/bnb-chain/greenfield-go-sdk/client"
 	"github.com/bnb-chain/greenfield-go-sdk/types"
+	accountmanager "github.com/codexfield/codex-contracts-go-sdk/account"
+	"github.com/codexfield/codex-contracts-go-sdk/contracts/codexam"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-git/go-git/v5/config"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/index"
 	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/storage"
-	"io"
-	"math"
-	"strconv"
-	"strings"
+)
+
+const (
+	AccountManagerAddr = "0xae5c57a7285602830aEA302f56e8Cf647a82F022"
+	CodexBrand         = "codex"
 )
 
 type GnfdStorage struct {
@@ -43,9 +55,36 @@ func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorag
 		return nil, err
 	}
 
+	// get account id from cdoexfield account manager contract
+	acc, err := accountmanager.NewAccount(privateKey)
+	if err != nil {
+		fmt.Println("prepare account failed", "err", err)
+		return nil, err
+	}
+	client, err := ethclient.Dial("https://data-seed-prebsc-1-s1.binance.org:8545/")
+	if err != nil {
+		fmt.Println("dial rpc failed", "err", err)
+		return nil, err
+	}
+	codexAM, err := codexam.NewICodexAM(common.HexToAddress(AccountManagerAddr), client)
+	if err != nil {
+		fmt.Println("new codex account manager instance failed", "err", err)
+		return nil, err
+	}
+	// Get Account ID
+	accountID, err := codexAM.GetAccountId(&bind.CallOpts{}, acc.Address())
+	if err != nil {
+		fmt.Println("get account id failed", "err", err)
+		return nil, err
+	}
+	if accountID.Cmp(big.NewInt(0)) <= 0 {
+		fmt.Println("Unregister account. ")
+		return nil, err
+	}
+
 	return &GnfdStorage{
 		GnfdClient: gnfdClient,
-		RepoName:   bucketName,
+		RepoName:   CodexBrand + "-" + accountID.String() + "-" + bucketName,
 		Account:    account,
 	}, nil
 }
