@@ -100,7 +100,6 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		fmt.Println("head object error: ", err)
 		return err
 	}
-
 	if err == nil {
 		if isOverWrite {
 			if object.ObjectInfo.ObjectStatus == storagetypes.OBJECT_STATUS_SEALED {
@@ -117,6 +116,8 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 				}
 			}
 			time.Sleep(3 * time.Second)
+		} else {
+			return nil
 		}
 	}
 
@@ -155,6 +156,8 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 				break
 			}
 		}
+		// wait sp to seal object
+		time.Sleep(2 * time.Second)
 	}
 
 	return err
