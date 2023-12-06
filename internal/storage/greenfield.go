@@ -40,12 +40,16 @@ func (s *GnfdStorage) head(key string) (int64, error) {
 }
 
 func (s *GnfdStorage) get(key string) ([]byte, error) {
-	//fmt.Println("get key:", key)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	objectDetails, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
 	if err != nil {
 		return nil, err
+	}
+
+	if objectDetails.ObjectInfo.ObjectStatus != storagetypes.OBJECT_STATUS_SEALED {
+		fmt.Println("object has not been sealed. Checking")
+		return []byte(""), fmt.Errorf("object has not beed sealed")
 	}
 
 	if objectDetails.ObjectInfo.PayloadSize == 0 {
@@ -55,13 +59,13 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 	object, status, err := s.GnfdClient.GetObject(ctx, s.GetBucketName(), key, types.GetObjectOptions{})
 	_ = status
 	if err != nil {
+		fmt.Println("get object failed. error", err)
 		return nil, err
 	}
 	val, err := io.ReadAll(object)
 	if err != nil {
 		return nil, err
 	}
-	//fmt.Println("get key: ", key, "value", string(val))
 	return val, nil
 }
 
@@ -88,7 +92,7 @@ func (s *GnfdStorage) has(key string) (bool, error) {
 }
 
 func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
-	fmt.Println("RepoName: ", s.GetBucketName(), " key: ", key, "isOverwrite: ", isOverWrite)
+	// fmt.Println("RepoName: ", s.GetBucketName(), " key: ", key, "isOverwrite: ", isOverWrite)
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
 	object, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
@@ -97,7 +101,7 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 		return err
 	}
 
-	if err == nil && object.ObjectInfo != nil {
+	if err == nil {
 		if isOverWrite {
 			if object.ObjectInfo.ObjectStatus == storagetypes.OBJECT_STATUS_SEALED {
 				_, err2 := s.GnfdClient.DeleteObject(ctx, s.GetBucketName(), key, types.DeleteObjectOption{})
@@ -113,8 +117,6 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 				}
 			}
 			time.Sleep(3 * time.Second)
-		} else {
-			return nil
 		}
 	}
 
