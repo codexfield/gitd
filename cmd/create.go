@@ -8,11 +8,17 @@ import (
 	"fmt"
 	"gitd/internal/storage"
 	"gitd/internal/transport"
+	"math/big"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/bnb-chain/greenfield-go-sdk/types"
+	accountmanager "github.com/codexfield/codex-contracts-go-sdk/account"
+	"github.com/codexfield/codex-contracts-go-sdk/contracts/codexam"
+	"github.com/ethereum/go-ethereum/accounts/abi/bind"
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
@@ -23,6 +29,8 @@ import (
 
 const (
 	DefaultBranchReferenceName = "refs/heads/main"
+	AccountManagerAddr         = "0xae5c57a7285602830aEA302f56e8Cf647a82F022"
+	CodexBrand                 = "codex"
 )
 
 // createCmd represents the create command
@@ -48,14 +56,42 @@ var createCmd = &cobra.Command{
 		if err != nil {
 			force = false
 		}
+		// get account id from cdoexfield account manager contract
+		acc, err := accountmanager.NewAccount(os.Getenv(transport.EnvPrivateKey))
+		if err != nil {
+			fmt.Println("prepare account failed", "err", err)
+			return
+		}
+		client, err := ethclient.Dial("https://data-seed-prebsc-1-s1.binance.org:8545/")
+		if err != nil {
+			fmt.Println("dial rpc failed", "err", err)
+			return
+		}
+		codexAM, err := codexam.NewICodexAM(common.HexToAddress(AccountManagerAddr), client)
+		if err != nil {
+			fmt.Println("new codex account manager instance failed", "err", err)
+			return
+		}
+		// Get Account ID
+		accountID, err := codexAM.GetAccountId(&bind.CallOpts{}, acc.Address())
+		if err != nil {
+			fmt.Println("get account id failed", "err", err)
+			return
+		}
+		if accountID.Cmp(big.NewInt(0)) <= 0 {
+			fmt.Println("Unregister account. ")
+			return
+		}
 
 		repoName, _ := strings.CutPrefix(endpoint.Path, "/")
+		repoName = CodexBrand + "-" + accountID.String() + "-" + repoName
 		newStorage, err := storage.NewStorage(
 			os.Getenv(transport.EnvChainID),
 			"https://"+endpoint.Host+":"+strconv.Itoa(endpoint.Port),
 			os.Getenv(transport.EnvPrivateKey),
 			repoName,
 		)
+
 		if err != nil {
 			fmt.Printf("New storage error: %s", err)
 			return
@@ -88,6 +124,9 @@ var createCmd = &cobra.Command{
 		}
 
 		_, err = git.InitWithOptions(newStorage, memfs.New(), git.InitOptions{DefaultBranch: DefaultBranchReferenceName})
+		if err != nil {
+			fmt.Println("Git init failed. Error: ", err)
+		}
 
 		hash := plumbing.NewHashReference(DefaultBranchReferenceName, plumbing.Hash{})
 		err = newStorage.SetReference(hash)
@@ -95,7 +134,7 @@ var createCmd = &cobra.Command{
 			fmt.Println("Set Reference ", DefaultBranchReferenceName, "error: ", err)
 			return
 		}
-		fmt.Println("Created successfully!")
+		fmt.Println("Created successfully! Repo name: ", repoName)
 	},
 }
 
