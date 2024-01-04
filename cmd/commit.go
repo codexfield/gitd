@@ -5,6 +5,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
 )
@@ -28,6 +30,7 @@ var commitCmd = &cobra.Command{
 		msg, _ := cmd.Flags().GetString("message")
 		_, err = w.Commit(msg, &git.CommitOptions{})
 		if err != nil {
+			fmt.Fprintln(os.Stdout, []any{"Commit failed, error", err}...)
 			return
 		}
 	},
