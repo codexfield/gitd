@@ -31,6 +31,12 @@ export GREENFIELD_PRIVATE_KEY=xxxx
 ```
 ## Build & Install
 
+### Build from source
+```
+make build
+```
+
+### Download pre-build binary
 ```shell
 curl -fsSL https://raw.githubusercontent.com/codexfield/gitd/develop/install.sh | bash
 ```
