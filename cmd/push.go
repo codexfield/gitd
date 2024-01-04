@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
@@ -41,6 +42,7 @@ var pushCmd = &cobra.Command{
 		err = r.Push(&git.PushOptions{
 			RemoteName: remoteName,
 			Force:      force,
+			Progress:   os.Stdout,
 		})
 		if err != nil {
 			fmt.Println("Repository push failed, error: ", err)

@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/go-git/go-billy/v5/osfs"
@@ -54,6 +55,7 @@ var cloneCmd = &cobra.Command{
 			URL:           endpoint.String(),
 			ReferenceName: DefaultBranchReferenceName,
 			SingleBranch:  true,
+			Progress:      os.Stdout,
 		})
 		if err != nil {
 			fmt.Println("Clone repo failed, error: ", err)
