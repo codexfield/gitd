@@ -42,22 +42,30 @@ func (s *GnfdStorage) head(key string) (int64, error) {
 func (s *GnfdStorage) get(key string) ([]byte, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()
-	objectDetails, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
-	if err != nil {
-		return nil, err
-	}
 
-	if objectDetails.ObjectInfo.ObjectStatus != storagetypes.OBJECT_STATUS_SEALED {
-		// retry
-		time.Sleep(3 * time.Second)
-		objectDetails, err = s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
+	retryCnt := 0
+	sealed := false
+	var objectDetails *types.ObjectDetail
+	for {
+		objectDetails, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
 		if err != nil {
 			return nil, err
 		}
 		if objectDetails.ObjectInfo.ObjectStatus != storagetypes.OBJECT_STATUS_SEALED {
-			fmt.Println("object has not been sealed after wait 3s. Checking")
-			return []byte(""), fmt.Errorf("object has not beed sealed")
+			time.Sleep(3 * time.Second)
+			continue
+		} else {
+			sealed = true
 		}
+		retryCnt++
+		if retryCnt == 5 {
+			break
+		}
+	}
+
+	if !sealed {
+		fmt.Println("object has not been sealed after retry. Checking")
+		return []byte(""), fmt.Errorf("object has not been sealed")
 	}
 
 	if objectDetails.ObjectInfo.PayloadSize == 0 {
