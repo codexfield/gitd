@@ -6,6 +6,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-git/go-git/v5"
 	"github.com/spf13/cobra"
@@ -45,8 +46,12 @@ var pushCmd = &cobra.Command{
 			Progress:   os.Stdout,
 		})
 		if err != nil {
-			fmt.Println("Repository push failed, error: ", err)
-			return
+			if strings.Contains(err.Error(), "already up-to-date") {
+				fmt.Println("Nothing to do. already up-to-date")
+			} else {
+				fmt.Println("Repository push failed, error: ", err)
+				return
+			}
 		}
 		fmt.Println("Repository push success.")
 	},

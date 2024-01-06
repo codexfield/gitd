@@ -1,4 +1,4 @@
-.PHONY: build
+.PHONY: gitd
 
-build:
+gitd:
 	go build -o build/bin/gitd gitd.go
