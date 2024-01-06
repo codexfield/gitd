@@ -48,8 +48,16 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 	}
 
 	if objectDetails.ObjectInfo.ObjectStatus != storagetypes.OBJECT_STATUS_SEALED {
-		fmt.Println("object has not been sealed. Checking")
-		return []byte(""), fmt.Errorf("object has not beed sealed")
+		// retry
+		time.Sleep(3 * time.Second)
+		objectDetails, err = s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
+		if err != nil {
+			return nil, err
+		}
+		if objectDetails.ObjectInfo.ObjectStatus != storagetypes.OBJECT_STATUS_SEALED {
+			fmt.Println("object has not been sealed after wait 3s. Checking")
+			return []byte(""), fmt.Errorf("object has not beed sealed")
+		}
 	}
 
 	if objectDetails.ObjectInfo.PayloadSize == 0 {
@@ -156,8 +164,6 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 				break
 			}
 		}
-		// wait sp to seal object
-		time.Sleep(2 * time.Second)
 	}
 
 	return err

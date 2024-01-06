@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 
 	"github.com/spf13/cobra"
@@ -19,7 +18,7 @@ var statusCmd = &cobra.Command{
 	Short: "Show the working tree status",
 	Long:  `usage: git status`,
 	Run: func(cmd *cobra.Command, args []string) {
-		r, err := git.PlainOpen("./")
+		_, r, err := openRepo()
 		if err != nil {
 			fmt.Println("Open repository failed, error: ", err)
 			return

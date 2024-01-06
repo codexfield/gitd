@@ -3,6 +3,9 @@ package transport
 import (
 	"context"
 	"errors"
+	"fmt"
+	"io"
+
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/format/packfile"
 	"github.com/go-git/go-git/v5/plumbing/protocol/packp"
@@ -10,7 +13,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/storer"
 	"github.com/go-git/go-git/v5/plumbing/transport"
 	"github.com/go-git/go-git/v5/utils/ioutil"
-	"io"
 )
 
 type rpSession struct {
@@ -80,7 +82,8 @@ func (s *rpSession) AdvertisedReferencesContext(ctx context.Context) (*packp.Adv
 	//
 	// This logic aligns with plumbing/transport/internal/common/common.go.
 	if ar.IsEmpty() {
-		return nil, transport.ErrEmptyRemoteRepository
+		fmt.Println("warning. You appear to push to an empty remote repo")
+		// return nil, transport.ErrEmptyRemoteRepository
 	}
 
 	transport.FilterUnsupportedCapabilities(ar.Capabilities)

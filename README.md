@@ -33,7 +33,7 @@ export GREENFIELD_PRIVATE_KEY=xxxx
 
 ### Build from source
 ```
-make build
+make gitd
 ```
 
 ### Download pre-build binary
@@ -43,7 +43,7 @@ curl -fsSL https://raw.githubusercontent.com/codexfield/gitd/develop/install.sh 
 
 ## Create A New Repo In Greenfield
 
-```shell
+```shelll
 gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
 ```
 

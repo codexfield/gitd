@@ -5,7 +5,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/go-git/go-git/v5"
+
 	"github.com/spf13/cobra"
 )
 
@@ -14,24 +14,33 @@ var addCmd = &cobra.Command{
 	Use:   "add",
 	Short: "Add file contents to the index\n",
 	Long:  `usage: git add [<options>] [--] <pathspec>...`,
-	Run: func(cmd *cobra.Command, args []string) {
-		r, err := git.PlainOpen("./")
-		if err != nil {
-			fmt.Println("Open repository failed, error: ", err)
-			return
+	RunE: func(cmd *cobra.Command, args []string) error {
+		if len(args) == 0 {
+			fmt.Printf("Nothing specified, nothing added.")
 		}
+
+		root, r, err := openRepo()
+		if err != nil {
+			return err
+		}
+
 		w, err := r.Worktree()
 		if err != nil {
-			fmt.Println("Get worktree failed, error: ", err)
-			return
+			return err
 		}
+
 		for _, arg := range args {
-			_, err := w.Add(arg)
+			a, err := repoRelPath(root, arg)
 			if err != nil {
-				fmt.Println("Add path failed, error: ", err)
-				return
+				return err
+			}
+
+			_, err = w.Add(a)
+			if err != nil {
+				return err
 			}
 		}
+		return nil
 	},
 }
 

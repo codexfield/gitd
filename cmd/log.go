@@ -20,7 +20,7 @@ var logCmd = &cobra.Command{
 	Short: "Show commit logs",
 	Long:  `usage: git log`,
 	Run: func(cmd *cobra.Command, args []string) {
-		r, err := git.PlainOpen("./")
+		_, r, err := openRepo()
 		if err != nil {
 			fmt.Println("Open repository failed, error: ", err)
 			return
