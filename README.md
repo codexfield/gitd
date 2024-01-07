@@ -43,9 +43,8 @@ curl -fsSL https://raw.githubusercontent.com/codexfield/gitd/develop/install.sh 
 
 ## Create A New Repo In Greenfield
 
-```shelll
-gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
-```
+Please visit [CodexField](https://www.codexfield.com). Click on "Start Dapp" and then navigate to the dashboard page.
+On the dashboard page, you will find a button labeled "New Repo". Click on this button to create a new repository.
 
 ## Init A Repo Locally
 ```shell
