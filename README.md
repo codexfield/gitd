@@ -41,12 +41,6 @@ make gitd
 curl -fsSL https://raw.githubusercontent.com/codexfield/gitd/develop/install.sh | bash
 ```
 
-## Create A New Repo In Greenfield
-
-```shelll
-gitd create gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
-```
-
 ## Init A Repo Locally
 ```shell
 mkdir <repo>

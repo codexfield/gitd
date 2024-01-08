@@ -53,12 +53,12 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 		}
 		if objectDetails.ObjectInfo.ObjectStatus != storagetypes.OBJECT_STATUS_SEALED {
 			time.Sleep(3 * time.Second)
-			continue
+			retryCnt++
+			if retryCnt == 5 {
+				break
+			}
 		} else {
 			sealed = true
-		}
-		retryCnt++
-		if retryCnt == 5 {
 			break
 		}
 	}
