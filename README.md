@@ -24,7 +24,10 @@ By default, the code uploaded through Gitd is set to private access, visible onl
 ## Set environment
 
 ```shell
-export GREENFIELD_CHAIN_ID=greenfield_5600-1
+export GREENFIELD_CHAIN_ID=greenfield_1017-1  // greenfield mainnet
+# export GREENFIELD_CHAIN_ID=greenfield_5600-1  // greenfield testnet
+# see https://docs.bnbchain.org/greenfield-docs/docs/api/endpoints/
+
 # use metamask to generate a new account and get your private key
 # use greenfield testnet faucet to get some testBNB
 export GREENFIELD_PRIVATE_KEY=xxxx
