@@ -53,7 +53,7 @@ gitd init
 
 ## Push to Greenfield Repo
 ```shell
-gitd remote add origin gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
+gitd remote add origin gnfd://https://greenfield-chain.bnbchain.org:443/<repoName>
 echo "Hello CodexField" >> README.md
 gitd add README.md
 gitd commit -m "add README.md"
@@ -64,7 +64,7 @@ gitd push origin main -f  // when push firstly, please use force push. will fix 
 
 ```shell
 cd <new_folder>
-gitd clone gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<repoName>
+gitd clone gnfd://https://greenfield-chain.bnbchain.org:443/<repoName>
 ```
 
 # Reference

@@ -47,7 +47,8 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 	sealed := false
 	var objectDetails *types.ObjectDetail
 	for {
-		objectDetails, err := s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
+		var err error
+		objectDetails, err = s.GnfdClient.HeadObject(ctx, s.GetBucketName(), key)
 		if err != nil {
 			return nil, err
 		}
