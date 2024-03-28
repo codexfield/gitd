@@ -140,5 +140,5 @@ var createCmd = &cobra.Command{
 
 func init() {
 	createCmd.Flags().BoolP("force", "f", false, "force create")
-	// rootCmd.AddCommand(createCmd)
+	rootCmd.AddCommand(createCmd)
 }
