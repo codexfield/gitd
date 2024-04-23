@@ -1,9 +1,14 @@
 package transport_test
 
 import (
+	. "gopkg.in/check.v1"
+	"os"
+	"testing"
+	"time"
+
 	"fmt"
-	"gitd/internal/storage"
-	"gitd/internal/transport"
+	"github.com/codexfield/gitd/storage"
+	"github.com/codexfield/gitd/transport"
 	"github.com/go-git/go-billy/v5/memfs"
 	fixtures "github.com/go-git/go-git-fixtures/v4"
 	"github.com/go-git/go-git/v5"
@@ -15,10 +20,6 @@ import (
 	"github.com/go-git/go-git/v5/plumbing/transport/server"
 	"github.com/go-git/go-git/v5/plumbing/transport/test"
 	"github.com/go-git/go-git/v5/storage/memory"
-	. "gopkg.in/check.v1"
-	"os"
-	"testing"
-	"time"
 )
 
 func Test(t *testing.T) { TestingT(t) }

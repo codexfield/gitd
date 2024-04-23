@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"fmt"
-	"gitd/internal/transport"
-	"github.com/spf13/cobra"
 	"runtime"
+
+	"github.com/codexfield/gitd/transport"
+	"github.com/spf13/cobra"
 )
 
 const (

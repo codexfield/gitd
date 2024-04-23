@@ -6,8 +6,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"gitd/internal/storage"
-	"gitd/internal/transport"
 	"math/big"
 	"os"
 	"strconv"
@@ -16,6 +14,8 @@ import (
 	"github.com/bnb-chain/greenfield-go-sdk/types"
 	accountmanager "github.com/codexfield/codex-contracts-go-sdk/account"
 	"github.com/codexfield/codex-contracts-go-sdk/contracts/codexam"
+	"github.com/codexfield/gitd/storage"
+	"github.com/codexfield/gitd/transport"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/ethclient"

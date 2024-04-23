@@ -6,14 +6,14 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"gitd/internal/storage"
-	"gitd/internal/transport"
 	"os"
 	"path"
 	"strconv"
 	"strings"
 
 	"github.com/bnb-chain/greenfield-go-sdk/types"
+	"github.com/codexfield/gitd/storage"
+	"github.com/codexfield/gitd/transport"
 	"github.com/go-git/go-billy/v5/memfs"
 	"github.com/go-git/go-billy/v5/osfs"
 	"github.com/go-git/go-git/v5"

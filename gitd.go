@@ -1,6 +1,8 @@
 package main
 
-import "gitd/cmd"
+import (
+	"github.com/codexfield/gitd/cmd"
+)
 
 func main() {
 	cmd.Execute()
