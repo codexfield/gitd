@@ -1,4 +1,4 @@
-module gitd
+module github.com/codexfield/gitd
 
 go 1.20
 
