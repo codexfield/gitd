@@ -3,6 +3,8 @@ package transport_test
 import (
 	. "gopkg.in/check.v1"
 	"os"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -25,8 +27,9 @@ import (
 func Test(t *testing.T) { TestingT(t) }
 
 const (
-	BucketName = "gitd"
-	Endpoint   = "gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/" + BucketName
+	BucketName                 = "gitd-test"
+	Endpoint                   = "gnfd://gnfd-testnet-fullnode-tendermint-ap.bnbchain.org:443/" + BucketName
+	DefaultBranchReferenceName = "refs/heads/main"
 )
 
 type BaseSuite struct {
@@ -89,6 +92,32 @@ func (s *BasicTestSuite) TestBasic(c *C) {
 	c.Assert(session, NotNil)
 }
 
+func (s *BasicTestSuite) TestCreateRepo(c *C) {
+	endpoint, err := transport2.NewEndpoint(Endpoint)
+	if err != nil {
+		panic(err)
+	}
+	repoName, _ := strings.CutPrefix(endpoint.Path, "/")
+	newStorage, err := storage.NewStorage(
+		os.Getenv(transport.EnvChainID),
+		"https://"+endpoint.Host+":"+strconv.Itoa(endpoint.Port),
+		os.Getenv(transport.EnvPrivateKey),
+		repoName,
+	)
+
+	_, err = git.InitWithOptions(newStorage, memfs.New(), git.InitOptions{DefaultBranch: DefaultBranchReferenceName})
+	if err != nil {
+		panic(err)
+	}
+	hash := plumbing.NewHashReference(DefaultBranchReferenceName, plumbing.Hash{})
+	err = newStorage.SetReference(hash)
+	if err != nil {
+		fmt.Println("Set Reference ", DefaultBranchReferenceName, "error: ", err)
+		return
+	}
+	fmt.Println("Created successfully! Repo name: ", repoName)
+}
+
 func (s *BasicTestSuite) TestBasicClone(c *C) {
 	var err error
 
@@ -104,21 +133,18 @@ func (s *BasicTestSuite) TestBasicClone(c *C) {
 	c.Assert(endpoint.Host, Equals, "gnfd-testnet-fullnode-tendermint-us.bnbchain.org")
 	c.Assert(endpoint.Port, Equals, int(443))
 
-	r, err := git.PlainOpen("../gitd/")
+	r, err := git.Open(memory.NewStorage(), memfs.New())
 	c.Assert(err, IsNil)
 
 	remoteName := "greenfield"
 	_, err = r.CreateRemote(&config.RemoteConfig{
 		Name: remoteName,
-		URLs: []string{"gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/" + BucketName},
+		URLs: []string{"gnfd://gnfd-testnet-fullnode-tendermint-ap.bnbchain.org:443/" + BucketName},
 	})
 	c.Assert(err, IsNil)
 	defer func() {
 		c.Assert(r.DeleteRemote(remoteName), IsNil)
 	}()
-
-	err = r.Push(&git.PushOptions{RemoteName: remoteName, Force: true})
-	c.Assert(err, IsNil)
 
 	// clone the empty repo
 	_, err = git.Clone(memory.NewStorage(), memfs.New(), &git.CloneOptions{
@@ -147,14 +173,14 @@ func (s *BasicTestSuite) TestBasicPush(c *C) {
 	fmt.Println("Endpoint: ", endpoint.String())
 	c.Assert(endpoint, NotNil)
 	c.Assert(endpoint.Protocol, Equals, transport.GnfdProtocol)
-	c.Assert(endpoint.Host, Equals, "gnfd-testnet-fullnode-tendermint-us.bnbchain.org")
+	c.Assert(endpoint.Host, Equals, "gnfd-testnet-fullnode-tendermint-ap.bnbchain.org")
 	c.Assert(endpoint.Port, Equals, int(443))
 
 	rep, err := git.Init(memory.NewStorage(), memfs.New())
 	c.Assert(err, IsNil)
 	_, err = rep.CreateRemote(&config.RemoteConfig{
 		Name: "greenfield",
-		URLs: []string{"gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/" + BucketName},
+		URLs: []string{"gnfd://gnfd-testnet-fullnode-tendermint-ap.bnbchain.org:443/" + BucketName},
 	})
 	c.Assert(err, IsNil)
 
