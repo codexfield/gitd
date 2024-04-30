@@ -43,14 +43,19 @@ func (s *GnfdStorage) get(key string) ([]byte, error) {
 	defer cancel()
 
 	key = strings.Replace(key, "\n", "", -1)
-	object, stat, err := s.GnfdClient.GetObject(ctx, s.GetBucketName(), key, types.GetObjectOptions{})
-	if err != nil {
-		return nil, err
+
+	size, err := s.head(key)
+	if err == nil && size > 0 {
+		object, stat, err := s.GnfdClient.GetObject(ctx, s.GetBucketName(), key, types.GetObjectOptions{})
+		if err != nil {
+			return nil, err
+		}
+		if stat.Size == 0 {
+			return nil, nil
+		}
+		return io.ReadAll(object)
 	}
-	if stat.Size == 0 {
-		return nil, nil
-	}
-	return io.ReadAll(object)
+	return nil, err
 }
 
 func (s *GnfdStorage) delete(key string) error {
@@ -88,7 +93,9 @@ func (s *GnfdStorage) put(key string, value []byte, isOverWrite bool) error {
 			return err
 		}
 		if exist {
-			err = s.GnfdClient.DelegateUpdateObjectContent(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{IsUpdate: true})
+			if isOverWrite {
+				err = s.GnfdClient.DelegateUpdateObjectContent(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{IsUpdate: true})
+			}
 		} else {
 			err = s.GnfdClient.DelegatePutObject(ctx, s.GetBucketName(), key, int64(len(value)), bytes.NewReader(value), types.PutObjectOptions{})
 		}
