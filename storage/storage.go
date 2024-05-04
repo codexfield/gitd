@@ -25,6 +25,11 @@ type GnfdStorage struct {
 	Account    *types.Account
 }
 
+func (s *GnfdStorage) AddAlternate(remote string) error {
+	//TODO implement me
+	panic("implement me")
+}
+
 func NewStorage(chainID, rpcAddress, privateKey, bucketName string) (*GnfdStorage, error) {
 	//fmt.Println("ChainID: ", chainID, " rpcAddress: ", rpcAddress, " privateKey: ", privateKey, " RepoName: ", RepoName)
 	account, err := types.NewAccountFromPrivateKey("gitd", privateKey)
@@ -241,7 +246,7 @@ func (s *GnfdStorage) CheckAndSetReference(new, old *plumbing.Reference) error {
 func (s *GnfdStorage) Reference(name plumbing.ReferenceName) (*plumbing.Reference, error) {
 	target, err := s.get(buildReferenceKey(name))
 	if err != nil {
-		if strings.Contains(err.Error(), "No such object") {
+		if strings.Contains(err.Error(), "No such object") || strings.Contains(err.Error(), "the specified object does not exist") {
 			return nil, plumbing.ErrReferenceNotFound
 		} else {
 			return nil, err

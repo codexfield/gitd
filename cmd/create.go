@@ -43,7 +43,7 @@ var createCmd = &cobra.Command{
 		if len(args) == 1 {
 			url = args[0]
 		} else {
-			fmt.Println("Must specify a url, example: gnfd://gnfd-testnet-fullnode-tendermint-us.bnbchain.org:443/<reponame>")
+			fmt.Println("Must specify a url, example: gnfd://{greenfield RPC Endpoint}:443/<reponame>")
 			return
 		}
 		endpoint, err := transport2.NewEndpoint(url)
