@@ -1,4 +1,3 @@
-
 # Background
 Git, created by Linus Torvalds in 2005, has become one of the most widely-used version control systems in both open-source and commercial fields. It has become an essential tool for modern software development. However, while Git's remote repositories are stored in a centralized platform GitHub, users may face restrictions when accessing repositories due to external factors, such as political restrictions. As we know, in its history, GitHub has banned numerous developers' accounts and limited access to Github's open-source projects. This has sparked heated discussions about the idea of open source truly having no borders? Avoiding centralized control of code assets has become a hot topic.
 
