@@ -79,4 +79,3 @@ gitd clone gnfd://https://greenfield-chain.bnbchain.org:443/<repoName>
 - [Greenfield-Cmd](https://github.com/bnb-chain/greenfield-cmd): the most powerful command line to interact with Greenfield system.
 - [Awesome Cosmos](https://github.com/cosmos/awesome-cosmos): Collection of Cosmos related resources which also fits Greenfield.
 
-
